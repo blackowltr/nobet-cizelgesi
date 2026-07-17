@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personel Nöbet Çizelgesi</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --gunduz: #f5f5f5; --gece: #e5e5e5; --istirahat: #d4d4d4;
+            --gunduz-text: #000; --gece-text: #000; --istirahat-text: #000;
+            --primary: #000; --primary-hover: #333;
+            --danger: #000; --danger-hover: #333;
+            --surface: #ffffff; --bg: #fafafa;
+            --border: #d4d4d4; --text: #000; --text-secondary: #666;
+            --radius: 12px; --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-lg: 0 4px 20px rgba(0,0,0,0.1);
+            --radius-sm: 8px;
+            --surface-hover: #f8fafc; --surface-alt: #fafafa;
+            --table-border: #334155; --table-th-bg: #e5e5e5;
+            --input-bg: #fff; --grup-header-gunduz: #f5f5f5;
+            --grup-header-gece: #ebebeb; --grup-header-istirahat: #e0e0e0;
+        }
+        html.dark-mode {
+            --gunduz: #2a2a2a; --gece: #222233; --istirahat: #2a2a1e;
+            --gunduz-text: #ccc; --gece-text: #99aabb; --istirahat-text: #bbaa77;
+            --primary: #e5e5e5; --primary-hover: #fff;
+            --danger: #e5e5e5; --danger-hover: #fff;
+            --surface: #1a1a1a; --bg: #0d0d0d;
+            --border: #444; --text: #e5e5e5; --text-secondary: #999;
+            --shadow: 0 1px 3px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.4);
+            --shadow-lg: 0 4px 24px rgba(0,0,0,0.6);
+            --surface-hover: #282828; --surface-alt: #1e1e1e;
+            --table-border: #555; --table-th-bg: #2a2a2a;
+            --input-bg: #222; --grup-header-gunduz: #2a2a2a;
+            --grup-header-gece: #222233; --grup-header-istirahat: #2a2a1e;
+        }
+        html.dark-mode .nav-bar button.aktif { color: #0d0d0d; }
+        html.dark-mode .btn-primary { background: #e5e5e5; color: #0d0d0d; }
+        html.dark-mode .btn-primary:hover { background: #fff; color: #000; box-shadow: 0 2px 8px rgba(255,255,255,0.15); }
+        html.dark-mode .btn-danger { background: #e5e5e5; color: #0d0d0d; }
+        html.dark-mode .btn-danger:hover { background: #fff; color: #000; box-shadow: 0 2px 8px rgba(255,255,255,0.15); }
+        html.dark-mode .btn-outline { border-color: #555; color: #e5e5e5; }
+        html.dark-mode .btn-outline:hover { border-color: #888; background: #282828; }
+        html.dark-mode #nobet-tablosu th, html.dark-mode #nobet-tablosu td { border-color: #555; }
+        html.dark-mode .tam-ekran-btn { background: #333 !important; color: #e5e5e5 !important; }
+        html.dark-mode .tam-ekran-btn:hover { background: #444 !important; }
+        html.dark-mode .pill { border-color: #555; }
+        html.dark-mode .grup-card { border-color: #444; }
+        html.dark-mode .grup-card-header { border-bottom-color: #444; }
+        html.dark-mode #nobet-tablosu td.tarih div:last-child { color: #aaa; }
+        html.dark-mode .ekle-form input:focus { box-shadow: 0 0 0 3px rgba(255,255,255,0.08); }
+        html.dark-mode .grup-kisi-satir select:focus { box-shadow: 0 0 0 3px rgba(255,255,255,0.08); }
+        html.dark-mode .istatistik-modal-overlay { background: rgba(0,0,0,0.7); }
+        html.dark-mode #sifirlama-onay > div > div:first-child { background: rgba(239,68,68,0.15) !important; }
+        #cizelge-alani.renkli-cikti {
+            --gunduz: #dcfce7; --gece: #dbeafe; --istirahat: #fef9c3;
+            --gunduz-text: #166534; --gece-text: #1e40af; --istirahat-text: #92400e;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Arial, sans-serif; background: var(--bg); color: var(--text); padding: clamp(8px, 1.6vw, 24px); max-width: 100%; margin: 0 auto; line-height: 1.5; min-height: 100dvh; display:flex;flex-direction:column; }
+
+        .container { max-width: 100%; margin: 0 auto; width:100%; flex:1; }        .card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); padding: clamp(14px, 2vw, 28px); }
+        .card + .card { margin-top: 16px; }
+
+        h1 { font-size: clamp(15px, 1.4vw, 18px); font-weight: 700; color: var(--text); padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; letter-spacing: -0.01em; }
+        h2 { font-size: clamp(13px, 1.1vw, 14px); font-weight: 600; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+        /* Nav */
+        .nav-bar { display: flex; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; margin-bottom: clamp(10px, 1.2vw, 16px); position: relative; isolation: isolate; }
+        .nav-bar button { flex: 1; padding: clamp(10px, 1.2vw, 16px) clamp(12px, 1.6vw, 24px); border: none; font-size: clamp(13px, 1.1vw, 15px); font-weight: 500; cursor: pointer; background: transparent; color: var(--text-secondary); will-change: transform, opacity; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; letter-spacing: 0.2px; }
+        .nav-bar button svg { transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); flex-shrink: 0; will-change: transform; }
+        .nav-bar button:hover { color: var(--text); }
+        .nav-bar button:hover svg { transform: scale(1.1); }
+        .nav-bar button:active svg { transform: scale(0.92); }
+        .nav-bar button::before { content: ''; position: absolute; inset: 5px; border-radius: 8px; background: var(--primary); opacity: 0; will-change: opacity; transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1); z-index: -1; }
+        .nav-bar button::after { content: ''; position: absolute; right: 0; top: 24%; height: 52%; width: 1px; background: var(--border); will-change: opacity; transition: opacity 0.2s ease; }
+        .nav-bar button.aktif { color: #fff; }
+        .nav-bar button.aktif::before { opacity: 1; }
+        .nav-bar button.aktif svg { transform: scale(1.05); }
+        .nav-bar button.aktif::after { opacity: 0; }
+        .nav-bar button:last-child::after { display: none; }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; line-height: 1.4; }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-hover); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-outline:hover { background: var(--surface-hover); border-color: var(--border); }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-danger:hover { background: var(--danger-hover); box-shadow: 0 2px 8px rgba(239,68,68,0.25); }
+        .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 6px; }
+
+        /* Forms */
+        .ekle-form { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+        .ekle-form input { padding: 9px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px; transition: all 0.2s; background: var(--input-bg); color: var(--text); }
+        .ekle-form input::placeholder { color: var(--text-secondary); }
+        .ekle-form input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,0,0,0.1); }
+        .ekle-form input[name="sicil"] { width: 100px; }
+        .ekle-form input[name="ad"] { flex: 1; min-width: 180px; }
+
+        /* Personnel table */
+        .personel-tablo { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .personel-tablo thead { position: sticky; top: 0; }
+        .personel-tablo th { background: var(--surface-hover); padding: 11px 14px; text-align: left; font-weight: 600; font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 2px solid var(--border); }
+        .personel-tablo td { padding: 10px 14px; border-bottom: 1px dashed var(--border); vertical-align: middle; }
+        .personel-tablo tr:last-child td { border-bottom: none; }
+        .personel-tablo tbody tr { transition: background 0.12s; }
+        .personel-tablo tbody tr:hover td { background: var(--surface-hover); }
+        .personel-tablo tbody tr:nth-child(even) td { background: var(--surface-alt); }
+        .personel-tablo tbody tr:nth-child(even):hover td { background: var(--surface-hover); }
+        .personel-tablo .empty-msg { text-align: center; color: var(--text-secondary); padding: 32px; font-style: italic; }
+
+        /* Group cards */
+        @keyframes kartGir { from { opacity: 0; transform: translate3d(0, 16px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+        .grup-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .grup-card { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); animation: kartGir 0.35s cubic-bezier(0.4, 0, 0.2, 1) backwards; will-change: transform, opacity; }
+        .grup-card:nth-child(1) { animation-delay: 0s; }
+        .grup-card:nth-child(2) { animation-delay: 0.06s; }
+        .grup-card:nth-child(3) { animation-delay: 0.12s; }
+        .grup-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04); transform: translate3d(0, -2px, 0); }
+        .grup-card-header { padding: 14px 16px; font-weight: 600; font-size: 12px; display: flex; align-items: center; gap: 10px; letter-spacing: 0.3px; position: relative; }
+        .grup-card-header::after { content: ''; position: absolute; bottom: 0; left: 16px; right: 16px; height: 1px; background: var(--border); opacity: 0.5; }
+        .grup-card-body { padding: 14px; }
+        .grup-kisi-satir { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; will-change: transform, opacity; }
+        .grup-kisi-satir select { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 12px; background: var(--input-bg); color: var(--text); min-width: 0; transition: border-color 0.2s, box-shadow 0.2s; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+        .grup-kisi-satir select:focus { outline: none; border-color: var(--text); box-shadow: 0 0 0 3px rgba(0,0,0,0.06), 0 0 0 1px var(--text); }
+        .grup-kisi-satir select:hover { border-color: var(--text); }
+        .grup-kisi-satir select option { padding: 6px; }
+        .btn-sil { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px; padding: 6px; border-radius: 8px; line-height: 1; flex-shrink: 0; transition: color 0.15s, background 0.15s; display: flex; align-items: center; justify-content: center; }
+        .btn-sil:hover { color: var(--text); background: var(--surface-hover); }
+        .btn-ekle { width: 100%; padding: 10px; border: 1px dashed var(--border); border-radius: 10px; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 12px; transition: border-color 0.2s, color 0.2s, background 0.2s; text-align: center; }
+        .btn-ekle:hover { border-color: var(--text); color: var(--text); background: var(--surface-hover); border-style: solid; }
+        .grup-etiket { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; opacity: 0.55; }
+        .grup-kisi-satir select:disabled { opacity: 0.4; cursor: not-allowed; }
+        html.dark-mode .grup-kisi-satir select:focus { box-shadow: 0 0 0 3px rgba(255,255,255,0.06); }
+        html.dark-mode .grup-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+        html.dark-mode .grup-kisi-satir select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E"); }
+
+        /* Period & Actions */
+        .islem-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+        .islem-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+        .pill { display: flex; align-items: center; gap: 6px; background: var(--surface-alt); padding: 7px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); font-size: 13px; }
+        .pill select, .pill input { padding: 6px 8px; border: none; border-radius: 6px; font-size: 13px; background: transparent; font-weight: 500; color: var(--text); }
+        .pill select:focus, .pill input:focus { outline: none; }
+        .islem-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        /* Schedule area */
+        #cizelge-alani { background: var(--surface); padding: clamp(12px, 1.6vw, 20px); margin: 16px 0 0; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); flex:1; min-height:0; }
+        #cizelge-alani.tam-ekran { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: var(--surface); overflow-y: auto; padding: clamp(16px, 2vw, 30px); max-width: none; margin: 0; border-radius: 0; box-shadow: none; border: none; }
+        #nobet-tablosu { width: 100%; border-collapse: collapse; font-size: clamp(10px, 0.9vw, 12px); }
+        #nobet-tablosu th, #nobet-tablosu td { border: 1px solid var(--table-border); padding: clamp(3px, 0.5vw, 8px); text-align: center; vertical-align: middle; }
+        #nobet-tablosu th { background: var(--table-th-bg); font-weight: 700; font-size: clamp(10px, 0.85vw, 12px); color: var(--text); }
+        #nobet-tablosu td.tarih { font-weight: 600; white-space: nowrap; width: auto; text-align: center; padding: clamp(4px, 0.5vw, 8px); }
+        #nobet-tablosu td.gunduz { background: var(--gunduz); text-align: left; }
+        #nobet-tablosu td.gece { background: var(--gece); text-align: left; }
+        #nobet-tablosu td.istirahat { background: var(--istirahat); text-align: left; }
+
+        .bos-uyari { text-align: center; padding: 40px; color: var(--text-secondary); font-style: italic; font-size: 13px; }
+
+        /* Legend */
+        .lejant { display: flex; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; }
+        .lejant span { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-secondary); background: var(--surface-alt); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); }
+        .lejant .kutu { width: 10px; height: 10px; border-radius: 2px; }
+
+        /* Toast */
+        #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px) scale(0.9); background: #334155; color: #fff; padding: 14px 28px; border-radius: 12px; font-size: 14px; font-weight: 500; box-shadow: 0 8px 32px rgba(0,0,0,0.25); z-index: 2000; opacity: 0; transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); pointer-events: none; white-space: nowrap; display: flex; align-items: center; gap: 10px; backdrop-filter: blur(4px); }
+        #toast.goster { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+
+        /* Stats modal */
+        #istatistik-modal { display: none; }
+        #istatistik-modal.goster { display: flex !important; }
+        .istatistik-kutu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+        .istatistik-kutu > div { padding: 14px; border-radius: 8px; border: 1px solid var(--border); text-align: center; }
+        .istatistik-kutu .sayi { font-size: 28px; font-weight: 700; line-height: 1.2; }
+        .istatistik-kutu .label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; font-weight: 500; }
+        .istatistik-gun { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 12px; }
+        .istatistik-gun + .istatistik-gun { border-top: 1px solid var(--border); }
+        .istatistik-gun .tarih { min-width: 100px; font-weight: 500; }
+        .istatistik-gun .vardiya { padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+
+        /* Pages */
+        .sayfa { display: none; }
+        .sayfa.aktif { display: block; }
+        #sayfa-nobet.aktif { display:flex; flex-direction:column; }
+
+        @media print {
+            .nav-bar, .sayfa-panel, #istatistik-modal { display: none !important; }
+            body { background: #fff; padding: 0; }
+            .container { max-width: none; }
+            #sayfa-nobet { display: block !important; }
+            #cizelge-alani { display: block !important; box-shadow: none; padding: 10px 12px; border-radius: 0; }
+            @page { size: A4 landscape; margin: 6mm 10mm; }
+            #nobet-tablosu { width: 100%; table-layout: fixed; }
+            #nobet-tablosu th, #nobet-tablosu td { border-color: #222; }
+            #nobet-tablosu th, #nobet-tablosu td, #nobet-tablosu td.gunduz, #nobet-tablosu td.gece, #nobet-tablosu td.istirahat { background: #fff !important; }
+            #cizelge-alani.renkli-cikti #nobet-tablosu th { background: #e5e5e5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #cizelge-alani.renkli-cikti #nobet-tablosu td.gunduz { background: var(--gunduz) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #cizelge-alani.renkli-cikti #nobet-tablosu td.gece { background: var(--gece) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #cizelge-alani.renkli-cikti #nobet-tablosu td.istirahat { background: var(--istirahat) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .lejant, .tam-ekran-btn, #alt-bilgi, #alt-imza { display: none !important; }
+            #cizelge-alani > :first-child { display: block !important; text-align: center !important; }
+            #tablo-baslik { margin-bottom: 20px !important; font-size: 16px; }
+            #nobet-tablosu thead { display: table-header-group; }
+            #nobet-tablosu tr { page-break-inside: avoid; }
+            #nobet-tablosu td, #nobet-tablosu th { padding: 5px 6px; font-size: 11px; overflow-wrap: break-word; word-break: break-word; }
+            #nobet-tablosu th:first-child { width: 18%; }
+            #nobet-tablosu th:nth-child(2) { width: 28%; }
+            #nobet-tablosu th:nth-child(3) { width: 28%; }
+            #nobet-tablosu th:nth-child(4) { width: 26%; }
+        }
+
+        @media (max-width: 860px) { .grup-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) {
+            body { padding: 6px; }
+            .card { padding: 10px 12px; }
+            #nobet-tablosu td, #nobet-tablosu th { padding: 3px 2px; font-size: 8px; }
+            #nobet-tablosu td.tarih { width: auto; }
+            #nobet-tablosu { font-size: 8px; }
+            .islem-bar { flex-direction: column; align-items: stretch; }
+            .islem-actions { justify-content: stretch; }
+            .islem-actions .btn { flex: 1; justify-content: center; }
+            #cizelge-alani { padding: 8px; margin-top: 10px; }
+            #cizelge-alani.tam-ekran { padding: 10px; }
+        }
+    </style>
+    <style>
+        /* Background bubbles */
+        .bubbles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; z-index: -1; }
+        .bubble { position: absolute; bottom: -80px; border-radius: 50%; opacity: 0.08; animation: yuksel linear infinite; }
+        .bubble:nth-child(1) { width: 60px; height: 60px; left: 5%; animation-duration: 18s; animation-delay: 0s; }
+        .bubble:nth-child(2) { width: 90px; height: 90px; left: 15%; animation-duration: 22s; animation-delay: 2s; }
+        .bubble:nth-child(3) { width: 40px; height: 40px; left: 25%; animation-duration: 15s; animation-delay: 4s; }
+        .bubble:nth-child(4) { width: 110px; height: 110px; left: 40%; animation-duration: 25s; animation-delay: 1s; }
+        .bubble:nth-child(5) { width: 50px; height: 50px; left: 50%; animation-duration: 17s; animation-delay: 3s; }
+        .bubble:nth-child(6) { width: 70px; height: 70px; left: 65%; animation-duration: 20s; animation-delay: 5s; }
+        .bubble:nth-child(7) { width: 45px; height: 45px; left: 75%; animation-duration: 14s; animation-delay: 0s; }
+        .bubble:nth-child(8) { width: 100px; height: 100px; left: 85%; animation-duration: 23s; animation-delay: 3s; }
+        .bubble:nth-child(9) { width: 55px; height: 55px; left: 35%; animation-duration: 16s; animation-delay: 6s; }
+        .bubble:nth-child(10) { width: 80px; height: 80px; left: 55%; animation-duration: 19s; animation-delay: 2s; }
+        @keyframes yuksel { 0% { transform: translateY(0) scale(1); opacity: 0.08; } 50% { opacity: 0.12; } 100% { transform: translateY(-110vh) scale(0.6); opacity: 0; } }
+        html.dark-mode .bubble { background: #fff; opacity: 0.06; }
+        .bubble { background: #000; }
+    </style>
+</head>
+<body>
+<div class="bubbles"><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div></div>
+
+<div id="toast"></div>
+<div class="nav-bar">
+    <button id="nav-nobet" class="aktif" onclick="sayfaDegistir('nobet')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+        Nöbet Çizelgesi
+    </button>
+    <button id="nav-personel" onclick="sayfaDegistir('personel')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Personel Yönetimi
+    </button>
+    <button id="nav-tema" onclick="koyuTemaDegistir()" title="Koyu tema" style="flex:none;padding:clamp(10px, 1.2vw, 16px);">
+        <svg id="tema-ikon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+</div>
+
+<div id="sayfa-personel" class="sayfa">
+    <div class="kontrol-paneli sayfa-panel">
+        <h1>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Personel Yönetimi
+        </h1>
+        <section>
+            <div class="ekle-form">
+                <input type="text" id="sicil-input" name="sicil" placeholder="Sicil (6 hane)" maxlength="6" inputmode="numeric" pattern="\d{6}" title="6 haneli sicil numarası">
+                <input type="text" id="ad-input" name="ad" placeholder="Ad Soyad" title="Personel adı ve soyadı">
+                <button class="btn btn-primary" onclick="personelEkle()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Ekle
+                </button>
+            </div>
+            <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+                <table class="personel-tablo">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;text-align:center;">#</th>
+                            <th style="width:80px;">Sicil</th>
+                            <th>Ad Soyad</th>
+                            <th style="width:56px;text-align:center;">Amir</th>
+                            <th style="width:56px;text-align:center;"></th>
+                            <th style="width:56px;text-align:center;"></th>
+                            <th style="width:48px;text-align:center;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="personel-tbody">
+                        <tr><td class="empty-msg" colspan="7">Henüz personel eklenmemiş.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="personel-sayac" style="font-size:12px;color:var(--text-secondary);margin-top:8px;text-align:right;">Toplam: 0 personel</div>
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
+                <button class="btn btn-danger" onclick="sifirlamaBaslat()" style="gap:6px;padding:7px 16px;font-size:12px;" id="sifirla-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Tüm Verileri Sıfırla
+                </button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div id="sifirlama-onay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:5000;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:92%;max-width:420px;padding:32px;text-align:center;">
+        <div style="width:48px;height:48px;background:#fef2f2;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:6px;color:var(--text);">Tüm Veriler Silinecek</h3>
+        <p style="font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:20px;">Personeller, grup atamaları ve tüm ayarlar kalıcı olarak silinir. Bu işlem geri alınamaz.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button id="sil-iptal" class="btn btn-outline" onclick="sifirlamaIptal()" style="padding:8px 24px;font-size:13px;">İptal</button>
+            <button id="sil-onay" class="btn btn-danger" onclick="verileriSifirla()" disabled style="padding:8px 24px;font-size:13px;opacity:0.4;cursor:not-allowed;transition:all 0.3s;">
+                <span id="sil-sure">3</span> saniye bekle
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="sayfa-nobet" class="sayfa aktif">
+    <div class="kontrol-paneli sayfa-panel" style="padding-bottom:20px;flex-shrink:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:20px;">
+            <h1 style="padding:0;border:none;margin:0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Nöbet Çizelgesi
+            </h1>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span class="pill" style="font-weight:600;gap:8px;padding:6px 16px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span id="donem-bilgisi"></span>
+                </span>
+                <label class="btn btn-outline" style="gap:6px;padding:7px 14px;font-size:12px;cursor:pointer;line-height:1.4;">
+                    <input type="checkbox" id="renkli-cikti" style="accent-color:var(--primary);width:14px;height:14px;margin:0;cursor:pointer;">
+                    Renkli
+                </label>
+                <label class="btn btn-outline" style="gap:6px;padding:7px 14px;font-size:12px;cursor:pointer;line-height:1.4;">
+                    <input type="checkbox" id="sicil-cikti" style="accent-color:var(--primary);width:14px;height:14px;margin:0;cursor:pointer;" onchange="cizelgeOlustur()">
+                    Sicil
+                </label>
+                <button class="btn btn-primary" onclick="cizelgeGoster()" style="gap:6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                    Tam Ekran
+                </button>
+                <button class="btn btn-primary" onclick="window.print()" style="gap:6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Yazdır
+                </button>
+            </div>
+        </div>
+
+        <section style="margin-bottom:20px;">
+            <div onclick="tarihAraligiToggle()" style="display:flex;align-items:center;gap:12px;margin-bottom:0;cursor:pointer;user-select:none;">
+                <div style="width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--bg);flex-shrink:0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <div style="flex:1;">
+                    <div style="font-weight:700;font-size:15px;color:var(--text);letter-spacing:-0.01em;">Tarih Aralığı</div>
+                    <div style="font-size:12px;color:var(--text-secondary);margin-top:1px;">Varsayılan 7 gün yerine özel tarih aralığı seçin</div>
+                </div>
+                <span id="tarih-ok" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;transition:transform 0.25s;color:var(--text-secondary);flex-shrink:0;">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5l3 3 3-3"/></svg>
+                </span>
+            </div>
+            <div id="tarih-picker" style="display:none;margin-top:14px;">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px;background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);">Başlangıç</label>
+                        <input type="date" id="tarih-baslangic" style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--input-bg);color:var(--text);">
+                    </div>
+                    <span style="color:var(--text-secondary);font-size:14px;font-weight:600;">—</span>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <label style="font-size:12px;font-weight:600;color:var(--text-secondary);">Bitiş</label>
+                        <input type="date" id="tarih-bitis" style="padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--input-bg);color:var(--text);">
+                    </div>
+                    <button class="btn btn-primary btn-sm" onclick="tarihAraligiOlustur()" style="gap:5px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        Oluştur
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="tarihAraliginiSifirla()" style="gap:5px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        Sıfırla
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <div style="width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--bg);flex-shrink:0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div>
+                    <div style="font-weight:700;font-size:15px;color:var(--text);letter-spacing:-0.01em;">Grup Atamaları</div>
+                    <div style="font-size:12px;color:var(--text-secondary);margin-top:1px;">Her grup için personel seçin ve bugünkü vardiyayı belirleyin</div>
+                </div>
+            </div>
+            <div id="grup-atamalari"></div>
+        </section>
+    </div>
+
+    <div id="cizelge-alani" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+            <h3 id="tablo-baslik" style="margin:0;">PERSONEL NÖBET ÇİZELGESİ</h3>
+            <button class="btn tam-ekran-btn" onclick="tamEkran()" style="display:inline-flex;align-items:center;gap:4px;background:#e5e5e5;color:var(--text);font-size:12px;padding:6px 14px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+                Tam Ekran
+            </button>
+        </div>
+        <div class="lejant">
+            <span><span class="kutu" style="background:var(--gunduz);border-color:#aaa;"></span> Gündüz (08.00-19.00)</span>
+            <span><span class="kutu" style="background:var(--gece);border-color:#999;"></span> Gece (19.00-08.00)</span>
+            <span><span class="kutu" style="background:var(--istirahat);border-color:#888;"></span> İstirahat</span>
+        </div>
+        <table id="nobet-tablosu">
+            <thead>
+                <tr><th>TARİH</th><th>GÜNDÜZ (08.00-19.00)</th><th>GECE (19.00-08.00)</th><th>İSTİRAHAT</th></tr>
+            </thead>
+            <tbody id="nobet-govde"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="istatistik-modal" onclick="if(event.target===this)istatistikKapat()" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:3000;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-lg);width:92%;max-width:520px;max-height:85vh;overflow-y:auto;padding:28px 32px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;background:var(--primary);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--bg);flex-shrink:0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                </div>
+                <div>
+                    <div id="istatistik-ad" style="font-weight:700;font-size:16px;color:var(--text);"></div>
+                    <div id="istatistik-sicil" style="font-size:12px;color:var(--text-secondary);margin-top:1px;"></div>
+                </div>
+            </div>
+            <button onclick="istatistikKapat()" style="width:32px;height:32px;border:none;background:var(--surface-hover);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:all 0.15s;" title="Kapat">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div id="istatistik-donem" style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;padding:8px 12px;background:var(--surface-alt);border-radius:6px;border:1px solid var(--border);"></div>
+        <div id="istatistik-icerik"></div>
+        <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <button class="btn btn-primary btn-sm" onclick="personelIstatistikYazdir()" style="gap:5px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Yazdır
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="istatistikKapat()" style="padding:6px 18px;">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const GROUP_COUNT = 3;
+const NOBET_SIRASI = ['Gündüz', 'Gündüz', 'Gündüz', 'Gece', 'İstirahat', 'Gece', 'İstirahat', 'Gece', 'İstirahat'];
+const VARDİYA_AD = ['Gündüz', 'Gece', 'İstirahat'];
+const VARDİYA_CLASS = ['gunduz', 'gece', 'istirahat'];
+const LS_PERSONEL = 'nobet_personel';
+const LS_GRUPLAR = 'nobet_gruplar';
+const LS_AYAR = 'nobet_ayarlar';
+const ICON = {
+    check: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+    trash: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+    edit: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+    alert: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+    refresh: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>'
+};
+
+let veritabani = [];
+let grupAtamalari = Array.from({ length: GROUP_COUNT }, () => Array(5).fill(''));
+let grupVardiya = [0, 3, 6];
+let grup3Manuel = false;
+let ozelBaslangic = null;
+let ozelBitis = null;
+let istatistikSicil = null;
+
+function init() {
+    const kayitli = localStorage.getItem(LS_PERSONEL);
+    if (kayitli) {
+        veritabani = JSON.parse(kayitli);
+        veritabani.forEach(p => { if (p.amir === undefined) p.amir = false; });
+        const gru = localStorage.getItem(LS_GRUPLAR);
+        if (gru) grupAtamalari = JSON.parse(gru);
+        const ayar = localStorage.getItem(LS_AYAR);
+        if (ayar) {
+            const s = JSON.parse(ayar);
+            grup3Manuel = s.grup3Manuel || false;
+            if (s.grupVardiya) grupVardiya = s.grupVardiya;
+            if (s.koyuTema) koyuTemaUygula(true);
+        const cb = document.getElementById('renkli-cikti');
+        if (cb && s.renkliCikti) cb.checked = true;
+        const cbSicil = document.getElementById('sicil-cikti');
+        if (cbSicil && s.sicilCikti) cbSicil.checked = true;
+        }
+        const gecerliSet = new Set(grupVardiya);
+        if (grupVardiya.length !== 3 || gecerliSet.size !== 3 ||
+            !grupVardiya.every(o => o === 0 || o === 3 || o === 6)) {
+            grupVardiya = [0, 3, 6];
+        }
+    } else {
+        veritabani = [
+            { sicil: '101', ad: 'Ahmet Yılmaz', amir: false },
+            { sicil: '102', ad: 'Ayşe Demir', amir: false },
+            { sicil: '103', ad: 'Mehmet Çelik', amir: false },
+            { sicil: '104', ad: 'Fatma Şahin', amir: false }
+        ];
+        verileriKaydet();
+    }
+    donemGuncelle();
+    grupOtomatikDoldur();
+    renderPersonel();
+    renderGruplar();
+    cizelgeOlustur();
+    document.getElementById('sicil-input').addEventListener('keydown', e => { if (e.key === 'Enter') personelEkle(); });
+    document.getElementById('ad-input').addEventListener('keydown', e => { if (e.key === 'Enter') personelEkle(); });
+}
+
+function verileriKaydet() {
+    localStorage.setItem(LS_PERSONEL, JSON.stringify(veritabani));
+    localStorage.setItem(LS_GRUPLAR, JSON.stringify(grupAtamalari));
+    localStorage.setItem(LS_AYAR, JSON.stringify({ grup3Manuel, renkliCikti: document.getElementById('renkli-cikti').checked, sicilCikti: document.getElementById('sicil-cikti').checked, grupVardiya, koyuTema: document.documentElement.classList.contains('dark-mode') }));
+}
+
+function adFormatla(ad) {
+    const tr = 'tr-TR';
+    const kelimeler = ad.trim().split(/\s+/);
+    if (kelimeler.length === 1) return kelimeler[0].charAt(0).toLocaleUpperCase(tr) + kelimeler[0].slice(1).toLocaleLowerCase(tr);
+    const son = kelimeler.pop().toLocaleUpperCase(tr);
+    const ilk = kelimeler.map(k => k.charAt(0).toLocaleUpperCase(tr) + k.slice(1).toLocaleLowerCase(tr)).join(' ');
+    return ilk + ' ' + son;
+}
+
+function personelEkle() {
+    const sicilInput = document.getElementById('sicil-input');
+    const adInput = document.getElementById('ad-input');
+    const sicil = sicilInput.value.trim();
+    const ad = adFormatla(adInput.value);
+    if (!sicil || !ad) { alert('Sicil ve ad girin.'); return; }
+    if (!/^\d{6}$/.test(sicil)) { alert('Sicil 6 haneli rakam olmalıdır.'); return; }
+    if (veritabani.some(p => p.sicil === sicil)) { alert('Bu sicil numarası zaten kayıtlı.'); return; }
+    veritabani.push({ sicil, ad, amir: false });
+    sicilInput.value = ''; adInput.value = '';
+    sicilInput.focus();
+    grup3Manuel = false;
+    grupOtomatikDoldur();
+    verileriKaydet();
+    renderPersonel();
+    renderGruplar();
+    cizelgeOlustur();
+    toastGoster(ad + ' eklendi', ICON.check);
+}
+
+function personelSil(sicil) {
+    const kisi = veritabani.find(p => p.sicil === sicil);
+    if (!kisi) return;
+    if (!confirm('Sicil ' + sicil + ' numaralı personel silinsin mi?')) return;
+    veritabani = veritabani.filter(p => p.sicil !== sicil);
+    for (let g = 0; g < GROUP_COUNT; g++) {
+        grupAtamalari[g] = grupAtamalari[g].filter(s => s !== sicil);
+        if (g < 2 && grupAtamalari[g].length === 0) grupAtamalari[g] = [''];
+    }
+    grup3Manuel = false;
+    grupOtomatikDoldur();
+    verileriKaydet();
+    renderPersonel();
+    renderGruplar();
+    cizelgeOlustur();
+    toastGoster(kisi.ad + ' silindi', ICON.trash);
+}
+
+function adBul(sicil, showSicil) {
+    if (!sicil) return '';
+    const p = veritabani.find(p => p.sicil === sicil);
+    if (!p) return '';
+    return showSicil ? p.ad + ' - ' + p.sicil : p.ad;
+}
+
+function renderPersonel() {
+    const tbody = document.getElementById('personel-tbody');
+    const sayac = document.getElementById('personel-sayac');
+    if (veritabani.length === 0) {
+        tbody.innerHTML = '<tr><td class="empty-msg" colspan="7">Henüz personel eklenmemiş.</td></tr>';
+        if (sayac) sayac.textContent = 'Toplam: 0 personel';
+        return;
+    }
+    tbody.innerHTML = veritabani.slice().sort((a, b) => {
+        if (a.amir && !b.amir) return -1;
+        if (!a.amir && b.amir) return 1;
+        return parseInt(a.sicil) - parseInt(b.sicil);
+    }).map((p, i) =>
+        `<tr>
+            <td style="text-align:center;color:var(--text-secondary);font-size:12px;">${i + 1}</td>
+            <td style="font-weight:500;">${p.sicil}</td>
+            <td><span onclick="personelIstatistik('${p.sicil}')" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;text-decoration-color:var(--text-secondary);">${p.ad}</span></td>
+            <td style="text-align:center;"><input type="checkbox" ${p.amir ? 'checked' : ''} onchange="personelAmirDegistir('${p.sicil}', this.checked)" style="accent-color:var(--primary);width:16px;height:16px;cursor:pointer;"></td>
+            <td style="text-align:center;"><button class="btn btn-sm btn-outline" onclick="personelDuzenle('${p.sicil}')" style="padding:2px 6px;font-size:11px;border:none;display:inline-flex;align-items:center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button></td>
+            <td style="text-align:center;"><button class="btn btn-danger btn-sm" onclick="personelSil('${p.sicil}')" style="padding:2px 8px;font-size:11px;">×</button></td>
+            <td style="text-align:center;"><button class="btn btn-sm btn-outline" onclick="personelIstatistik('${p.sicil}')" style="padding:2px 6px;font-size:11px;border:none;display:inline-flex;align-items:center;" title="Vardiya istatistikleri">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            </button></td>
+        </tr>`
+    ).join('');
+    if (sayac) sayac.textContent = `Toplam: ${veritabani.length} personel`;
+}
+
+function personelIstatistik(sicil) {
+    istatistikSicil = sicil;
+    const kisi = veritabani.find(p => p.sicil === sicil);
+    if (!kisi) return;
+    document.getElementById('istatistik-ad').textContent = kisi.ad;
+    document.getElementById('istatistik-sicil').textContent = 'Sicil: ' + kisi.sicil;
+
+    let bas, bit;
+    if (ozelBaslangic && ozelBitis) {
+        bas = new Date(ozelBaslangic);
+        bit = new Date(ozelBitis);
+    } else {
+        bas = new Date();
+        bas = new Date(bas.getFullYear(), bas.getMonth(), bas.getDate());
+        bit = new Date(bas);
+        bit.setDate(bit.getDate() + 6);
+    }
+    const fark = Math.round((bit - bas) / (24 * 60 * 60 * 1000)) + 1;
+    document.getElementById('istatistik-donem').textContent =
+        bas.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+        + ' — ' + bit.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+        + '  (' + fark + ' gün)';
+
+    let gunduz = 0, gece = 0, istirahat = 0;
+    const gunler = [];
+    for (let day = 0; day < fark; day++) {
+        const tarih = new Date(bas);
+        tarih.setDate(tarih.getDate() + day);
+        const haftalikIdx = day;
+        let vardiya = null;
+        for (let g = 0; g < GROUP_COUNT; g++) {
+            if (!grupAtamalari[g].includes(sicil)) continue;
+            const sira = (grupVardiya[g] + haftalikIdx) % NOBET_SIRASI.length;
+            vardiya = NOBET_SIRASI[sira];
+            break;
+        }
+        if (vardiya === 'Gündüz') gunduz++;
+        else if (vardiya === 'Gece') gece++;
+        else if (vardiya === 'İstirahat') istirahat++;
+        gunler.push({ tarih, vardiya });
+    }
+
+    const icerik = document.getElementById('istatistik-icerik');
+    icerik.innerHTML = `
+        <div class="istatistik-kutu">
+            <div><div class="sayi" style="color:var(--gunduz-text);">${gunduz}</div><div class="label">Gündüz</div></div>
+            <div><div class="sayi" style="color:var(--gece-text);">${gece}</div><div class="label">Gece</div></div>
+            <div><div class="sayi" style="color:var(--istirahat-text);">${istirahat}</div><div class="label">İstirahat</div></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;font-weight:600;">Günlük Dağılım</div>
+        ${gunler.map(g => {
+            const v = g.vardiya || '—';
+            const cls = v === 'Gündüz' ? 'gunduz' : v === 'Gece' ? 'gece' : v === 'İstirahat' ? 'istirahat' : '';
+            return `<div class="istatistik-gun">
+                <span class="tarih">${g.tarih.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', weekday: 'short' })}</span>
+                <span class="vardiya ${cls}" style="background:var(--${cls});">${v}</span>
+            </div>`;
+        }).join('')}
+    `;
+
+    document.getElementById('istatistik-modal').classList.add('goster');
+    setTimeout(() => document.addEventListener('keydown', istatistikEsc), 50);
+}
+
+function istatistikKapat() {
+    document.getElementById('istatistik-modal').classList.remove('goster');
+    document.removeEventListener('keydown', istatistikEsc);
+}
+
+function istatistikEsc(e) {
+    if (e.key === 'Escape') istatistikKapat();
+}
+
+function personelIstatistikYazdir() {
+    const sicil = istatistikSicil;
+    const kisi = veritabani.find(p => p.sicil === sicil);
+    if (!kisi) return;
+
+    let bas, bit;
+    if (ozelBaslangic && ozelBitis) {
+        bas = new Date(ozelBaslangic);
+        bit = new Date(ozelBitis);
+    } else {
+        bas = new Date();
+        bas = new Date(bas.getFullYear(), bas.getMonth(), bas.getDate());
+        bit = new Date(bas);
+        bit.setDate(bit.getDate() + 6);
+    }
+    const fark = Math.round((bit - bas) / (24 * 60 * 60 * 1000)) + 1;
+
+    let rows = '';
+    for (let day = 0; day < fark; day++) {
+        const tarih = new Date(bas);
+        tarih.setDate(tarih.getDate() + day);
+        let vardiya = null;
+        for (let g = 0; g < GROUP_COUNT; g++) {
+            if (!grupAtamalari[g].includes(sicil)) continue;
+            const sira = (grupVardiya[g] + day) % NOBET_SIRASI.length;
+            vardiya = NOBET_SIRASI[sira];
+            break;
+        }
+        rows += `<tr>
+            <td>${tarih.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric', weekday: 'long' })}</td>
+            <td style="font-weight:600;">${vardiya || '—'}</td>
+        </tr>`;
+    }
+
+    const aralik = bas.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+        + ' — ' + bit.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    let iframe = document.getElementById('yazdir-iframes');
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'yazdir-iframes';
+        iframe.style = 'position:fixed;top:-9999px;left:-9999px;width:800px;height:600px;';
+        document.body.appendChild(iframe);
+    }
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html>
+<html lang="tr">
+<head><meta charset="UTF-8"><title>${kisi.ad} - Vardiya Çizelgesi</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; padding: 30px; color: #000; }
+    .header { text-align: center; margin-bottom: 24px; }
+    .header h1 { font-size: 18px; margin-bottom: 4px; }
+    .header p { font-size: 13px; color: #666; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #e5e5e5; padding: 10px 12px; text-align: left; font-size: 12px; font-weight: 700; border: 1px solid #222; }
+    td { padding: 9px 12px; border: 1px solid #222; }
+    @media print { body { padding: 15px; } }
+</style></head>
+<body>
+    <div class="header">
+        <h1>${kisi.ad}</h1>
+        <p>Sicil: ${kisi.sicil} &nbsp;·&nbsp; ${aralik}</p>
+    </div>
+    <table>
+        <thead><tr><th>TARİH</th><th>VARDİYA</th></tr></thead>
+        <tbody>${rows}</tbody>
+    </table>
+</body></html>`);
+    doc.close();
+    setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+    }, 300);
+}
+
+function personelDuzenle(sicil) {
+    const kisi = veritabani.find(p => p.sicil === sicil);
+    if (!kisi) return;
+    const yeniAd = prompt('Ad Soyad:', kisi.ad);
+    if (yeniAd === null || yeniAd.trim() === '') return;
+    const yeniSicil = prompt('Sicil:', kisi.sicil);
+    if (yeniSicil === null || yeniSicil.trim() === '') return;
+    if (!/^\d{6}$/.test(yeniSicil.trim())) { alert('Sicil 6 haneli rakam olmalıdır.'); return; }
+    if (yeniSicil.trim() !== kisi.sicil && veritabani.some(p => p.sicil === yeniSicil.trim())) {
+        alert('Bu sicil numarası zaten kayıtlı.');
+        return;
+    }
+    kisi.ad = adFormatla(yeniAd);
+    const eskiSicil = kisi.sicil;
+    kisi.sicil = yeniSicil.trim();
+    for (let g = 0; g < GROUP_COUNT; g++) {
+        grupAtamalari[g] = grupAtamalari[g].map(s => s === eskiSicil ? kisi.sicil : s);
+    }
+    verileriKaydet();
+    renderPersonel();
+    renderGruplar();
+    cizelgeOlustur();
+    toastGoster(kisi.ad + ' güncellendi', ICON.edit);
+}
+
+function personelAmirDegistir(sicil, amir) {
+    const kisi = veritabani.find(p => p.sicil === sicil);
+    if (!kisi) return;
+    if (amir) {
+        const mevcutAmirSayisi = veritabani.filter(p => p.amir).length;
+        if (mevcutAmirSayisi >= 3) {
+            toastGoster('En fazla 3 kişi Grup Amiri olarak işaretlenebilir (her grup için 1).', ICON.alert);
+            renderPersonel();
+            return;
+        }
+    }
+    kisi.amir = amir;
+    verileriKaydet();
+    cizelgeOlustur();
+    toastGoster(kisi.ad + ' ' + (amir ? 'Grup Amiri olarak işaretlendi' : 'Grup Amiri olarak işaretlenmedi'), ICON.check);
+}
+
+function renderGruplar() {
+    const div = document.getElementById('grup-atamalari');
+
+    function vardiyaRengi(v) {
+        if (v === 'Gündüz') return 'var(--grup-header-gunduz)';
+        if (v === 'Gece') return 'var(--grup-header-gece)';
+        return 'var(--grup-header-istirahat)';
+    }
+
+    let html = '<div class="grup-grid">';
+    for (let g = 0; g < GROUP_COUNT; g++) {
+        const bugunVardiya = NOBET_SIRASI[grupVardiya[g]];
+        const renk = vardiyaRengi(bugunVardiya);
+
+        const alinanVardiya = new Set();
+        for (let h = 0; h < GROUP_COUNT; h++) {
+            if (h !== g) alinanVardiya.add(NOBET_SIRASI[grupVardiya[h]]);
+        }
+
+        html += `<div class="grup-card">
+            <div class="grup-card-header" style="background:${renk};">
+                <span class="grup-etiket">Grup ${g + 1}</span>
+                <span style="margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;">
+                    <span style="opacity:0.45;font-size:10px;">Bugün</span>
+                    <select onchange="grupVardiyaDegisti(${g}, this.value)" style="background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:4px 22px 4px 8px;font-size:11px;font-weight:600;color:var(--text);">
+                        ${VARDİYA_AD.map((v, i) =>
+                            `<option value="${i}" ${NOBET_SIRASI[grupVardiya[g]] === v ? 'selected' : ''} ${alinanVardiya.has(v) ? 'disabled' : ''}>${v}</option>`
+                        ).join('')}
+                    </select>
+                </span>
+            </div>
+            <div class="grup-card-body">`;
+
+        const slots = grupAtamalari[g];
+        slots.forEach((sicil, idx) => {
+            const alinmis = new Set();
+            for (let h = 0; h < GROUP_COUNT; h++) {
+                if (h !== g) grupAtamalari[h].forEach(s => { if (s) alinmis.add(s); });
+            }
+            slots.forEach((s, i) => { if (i !== idx && s) alinmis.add(s); });
+            html += `<div class="grup-kisi-satir" style="animation:kartGir 0.25s cubic-bezier(0.4,0,0.2,1) backwards;animation-delay:${idx * 0.04}s;">
+                <select onchange="grupDegisti(${g}, ${idx}, this.value)">
+                    <option value="">— Seçin —</option>
+                    ${veritabani.filter(p => !alinmis.has(p.sicil) || p.sicil === sicil).map(p =>
+                        `<option value="${p.sicil}" ${p.sicil === sicil ? 'selected' : ''}>${p.sicil} - ${p.ad}</option>`
+                    ).join('')}
+                </select>
+                <button class="btn-sil" onclick="grupSlotSil(${g}, ${idx})" title="Kaldır">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>`;
+        });
+        html += `<button class="btn-ekle" onclick="grupSlotEkle(${g})" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:2px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Personel Ekle
+        </button>`;
+        html += `</div></div>`;
+    }
+    html += '</div>';
+    div.innerHTML = html;
+    verileriKaydet();
+}
+
+function grupOtomatikDoldur() {
+    if (grup3Manuel) return;
+    const atanmis = new Set();
+    for (let g = 0; g < 2; g++) {
+        grupAtamalari[g].forEach(s => { if (s) atanmis.add(s); });
+    }
+    grupAtamalari[2] = veritabani.filter(p => !atanmis.has(p.sicil)).map(p => p.sicil);
+    if (grupAtamalari[2].length === 0) grupAtamalari[2] = [''];
+}
+
+function grupVardiyaDegisti(grupIdx, vardiyaIdx) {
+    const v = parseInt(vardiyaIdx);
+    const hedef = VARDİYA_AD[v];
+    for (let h = 0; h < GROUP_COUNT; h++) {
+        if (h !== grupIdx && NOBET_SIRASI[grupVardiya[h]] === hedef) {
+            toastGoster(hedef + ' zaten Grup ' + (h + 1) + ' tarafından seçili', ICON.alert);
+            renderGruplar();
+            return;
+        }
+    }
+    const offsetMap = { 'Gündüz': 0, 'Gece': 3, 'İstirahat': 6 };
+    grupVardiya[grupIdx] = offsetMap[hedef] || 0;
+    verileriKaydet();
+    renderGruplar();
+    cizelgeOlustur();
+    toastGoster('Grup ' + (grupIdx + 1) + ' bugünkü vardiya: ' + hedef);
+}
+
+function grupDegisti(grupIdx, slotIdx, sicil) {
+    grupAtamalari[grupIdx][slotIdx] = sicil;
+    if (grupIdx === 2) grup3Manuel = true;
+    for (let h = 0; h < GROUP_COUNT; h++) {
+        if (h !== grupIdx) {
+            grupAtamalari[h] = grupAtamalari[h].map(s => s === sicil ? '' : s);
+        }
+    }
+    if (grupIdx < 2) grupOtomatikDoldur();
+    verileriKaydet();
+    renderGruplar();
+    cizelgeOlustur();
+}
+
+function grupSlotEkle(grupIdx) {
+    if (grupAtamalari[grupIdx].length >= 30) return;
+    if (grupIdx === 2) grup3Manuel = true;
+    grupAtamalari[grupIdx].push('');
+    verileriKaydet();
+    renderGruplar();
+    cizelgeOlustur();
+}
+
+function grupSlotSil(grupIdx, slotIdx) {
+    if (grupAtamalari[grupIdx].length <= 1) return;
+    grupAtamalari[grupIdx].splice(slotIdx, 1);
+    if (grupIdx === 2) grup3Manuel = true;
+    if (grupIdx < 2) grupOtomatikDoldur();
+    verileriKaydet();
+    renderGruplar();
+    cizelgeOlustur();
+}
+
+function cizelgeOlustur() {
+    const tbody = document.getElementById('nobet-govde');
+
+    const doluGrupSayisi = grupAtamalari.filter(g => g.some(s => s)).length;
+    if (doluGrupSayisi === 0) {
+        tbody.innerHTML = '<tr><td class="bos-uyari" colspan="4">Lütfen gruplara personel atayın.</td></tr>';
+        return;
+    }
+
+    let baslangicTarih;
+    if (ozelBaslangic) {
+        baslangicTarih = new Date(ozelBaslangic);
+    } else {
+        const simdi = new Date();
+        baslangicTarih = new Date(simdi.getFullYear(), simdi.getMonth(), simdi.getDate());
+    }
+
+    let gunSayisi;
+    if (ozelBaslangic && ozelBitis) {
+        gunSayisi = Math.round((ozelBitis - ozelBaslangic) / (24 * 60 * 60 * 1000)) + 1;
+    } else {
+        gunSayisi = 7;
+    }
+
+    tbody.innerHTML = '';
+    for (let day = 0; day < gunSayisi; day++) {
+        const tarih = new Date(baslangicTarih);
+        tarih.setDate(tarih.getDate() + day);
+        const tr = document.createElement('tr');
+
+        const shiftGruplari = VARDİYA_AD.map(hedef => {
+            const gruplar = [];
+            for (let g = 0; g < GROUP_COUNT; g++) {
+                const sira = (grupVardiya[g] + day) % NOBET_SIRASI.length;
+                if (NOBET_SIRASI[sira] === hedef && grupAtamalari[g].some(s => s)) {
+                    gruplar.push(g);
+                }
+            }
+            return gruplar;
+        });
+
+        let cells = `<td class="tarih"><div>${tarih.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}</div><div style="font-size:12px;font-weight:600;">${tarih.toLocaleDateString('tr-TR', { weekday: 'long' })}</div></td>`;
+
+        for (let s = 0; s < 3; s++) {
+            const gruplar = shiftGruplari[s];
+            let icerik;
+            if (gruplar.length === 0) {
+                icerik = '—';
+            } else {
+                const sicilGoster = document.getElementById('sicil-cikti').checked;
+                const kisiler = [];
+                const eklenen = new Set();
+                gruplar.forEach(g => {
+                    grupAtamalari[g].filter(s => s).forEach(s => {
+                        const p = veritabani.find(p => p.sicil === s);
+                        if (p && !eklenen.has(p.sicil)) { eklenen.add(p.sicil); kisiler.push(p); }
+                    });
+                });
+                kisiler.sort((a, b) => {
+                    if (a.amir && !b.amir) return -1;
+                    if (!a.amir && b.amir) return 1;
+                    return parseInt(a.sicil) - parseInt(b.sicil);
+                });
+                icerik = kisiler.map(p => sicilGoster
+                    ? `<div style="display:flex;justify-content:space-between;gap:12px;"><span>${p.ad}</span><span style="white-space:nowrap;">${p.sicil}</span></div>`
+                    : `<div>${p.ad}</div>`
+                ).join('');
+            }
+            cells += `<td class="${VARDİYA_CLASS[s]}">${icerik}</td>`;
+        }
+
+        tr.innerHTML = cells;
+        tbody.appendChild(tr);
+    }
+
+    verileriKaydet();
+}
+
+function excelAktar() {
+    if (typeof XLSX === 'undefined') {
+        alert('XLSX kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.');
+        return;
+    }
+    const simdi = new Date();
+    const yil = simdi.getFullYear();
+    const ay = simdi.getMonth() + 1;
+    const baslangicGunu = simdi.getDate();
+    const gunSayisi = 7;
+    const ROTATION_STEP = 2;
+
+    const veri = [
+        ['PERSONEL NÖBET ÇİZELGESİ'],
+        ['TARİH', 'GÜNDÜZ (08.00-19.00)', 'GECE (19.00-08.00)', 'İSTİRAHAT']
+    ];
+
+    for (let day = 0; day < gunSayisi; day++) {
+        const tarih = new Date(yil, ay - 1, baslangicGunu + day);
+        const dayStr = tarih.toLocaleDateString('tr-TR');
+        const dayGroup = (day * ROTATION_STEP) % GROUP_COUNT;
+        const nightGroup = (day * ROTATION_STEP + 1) % GROUP_COUNT;
+        const restGroup = (day * ROTATION_STEP + 2) % GROUP_COUNT;
+
+        const gunKisiler = grupAtamalari[dayGroup].filter(s => s).map(s => adBul(s)).join(', ');
+        const geceKisiler = grupAtamalari[nightGroup].filter(s => s).map(s => adBul(s)).join(', ');
+        const dinKisiler = grupAtamalari[restGroup].filter(s => s).map(s => adBul(s)).join(', ');
+
+        veri.push([dayStr, gunKisiler || '—', geceKisiler || '—', dinKisiler || '—']);
+    }
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(veri);
+
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }];
+    ws['!cols'] = [{ wch: 18 }, { wch: 32 }, { wch: 32 }, { wch: 32 }];
+
+    const styleBase = { font: { name: 'Calibri', sz: 10 }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+    const styleTitle = { font: { name: 'Calibri', sz: 14, bold: true }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const styleHeader = { font: { name: 'Calibri', sz: 11, bold: true }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true }, fill: { fgColor: { rgb: 'E8E8E8' } }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+    const styleDate = { font: { name: 'Calibri', sz: 10 }, alignment: { horizontal: 'left', vertical: 'center' }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+
+    const cols = ['A', 'B', 'C', 'D'];
+    if (ws['A1']) ws['A1'].s = styleTitle;
+    for (let c = 0; c < 4; c++) {
+        const ref = cols[c] + '2';
+        if (ws[ref]) ws[ref].s = styleHeader;
+    }
+    for (let r = 3; r < veri.length; r++) {
+        for (let c = 0; c < 4; c++) {
+            const ref = cols[c] + (r + 1);
+            if (ws[ref]) ws[ref].s = c === 0 ? styleDate : styleBase;
+        }
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Nöbet');
+    XLSX.writeFile(wb, `nobet_${yil}-${String(ay).padStart(2, '0')}.xlsx`);
+}
+
+function tamEkran() {
+    const el = document.getElementById('cizelge-alani');
+    const btn = document.querySelector('#cizelge-alani .tam-ekran-btn');
+    if (!el.classList.contains('tam-ekran')) {
+        el.classList.add('tam-ekran');
+        const cb = document.getElementById('renkli-cikti');
+        if (cb && cb.checked) el.classList.add('renkli-cikti');
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Kapat';
+        document.addEventListener('keydown', tamEkranEsc);
+    } else {
+        el.classList.remove('tam-ekran');
+        el.classList.remove('renkli-cikti');
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg> Tam Ekran';
+        document.removeEventListener('keydown', tamEkranEsc);
+    }
+}
+
+function tamEkranEsc(e) {
+    if (e.key === 'Escape') tamEkran();
+}
+
+let tarihPickerAcik = false;
+function tarihAraligiToggle() {
+    const picker = document.getElementById('tarih-picker');
+    const ok = document.getElementById('tarih-ok');
+    tarihPickerAcik = !tarihPickerAcik;
+    picker.style.display = tarihPickerAcik ? 'block' : 'none';
+    ok.style.transform = tarihPickerAcik ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+function tarihAraligiOlustur() {
+    const bas = document.getElementById('tarih-baslangic').value;
+    const bit = document.getElementById('tarih-bitis').value;
+    if (!bas || !bit) { toastGoster('Başlangıç ve bitiş tarihi seçin.', ICON.alert); return; }
+    const basDate = new Date(bas + 'T00:00:00');
+    const bitDate = new Date(bit + 'T00:00:00');
+    if (bitDate < basDate) { toastGoster('Bitiş tarihi başlangıçtan önce olamaz.', ICON.alert); return; }
+    const fark = Math.round((bitDate - basDate) / (24 * 60 * 60 * 1000)) + 1;
+    if (fark > 31) { toastGoster('En fazla 31 gün seçebilirsiniz.', ICON.alert); return; }
+    ozelBaslangic = basDate;
+    ozelBitis = bitDate;
+    donemGuncelle();
+    cizelgeOlustur();
+    const el = document.getElementById('cizelge-alani');
+    if (el.style.display === 'block') baslikGuncelle();
+    toastGoster(fark + ' günlük çizelge oluşturuldu', ICON.check);
+}
+
+function tarihAraliginiSifirla() {
+    ozelBaslangic = null;
+    ozelBitis = null;
+    donemGuncelle();
+    document.getElementById('tarih-baslangic').value = '';
+    document.getElementById('tarih-bitis').value = '';
+    cizelgeOlustur();
+    const el = document.getElementById('cizelge-alani');
+    if (el.style.display === 'block') baslikGuncelle();
+    toastGoster('Varsayılan 7 günlük görünüme dönüldü', ICON.refresh);
+}
+
+function donemGuncelle() {
+    const el = document.getElementById('donem-bilgisi');
+    if (el) {
+        if (ozelBaslangic && ozelBitis) {
+            el.textContent = ozelBaslangic.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+                + ' — ' + ozelBitis.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+        } else {
+            const simdi = new Date();
+            const bugun = simdi.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+            const son = new Date(simdi);
+            son.setDate(son.getDate() + 6);
+            const sonGun = son.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+            el.textContent = bugun + ' — ' + sonGun;
+        }
+    }
+}
+
+function cizelgeGoster() {
+    const el = document.getElementById('cizelge-alani');
+    if (el.style.display === 'none') {
+        cizelgeOlustur();
+        el.style.display = 'block';
+    }
+    if (!el.classList.contains('tam-ekran')) tamEkran();
+    baslikGuncelle();
+}
+
+function baslikGuncelle() {
+    const h3 = document.getElementById('tablo-baslik');
+    if (ozelBaslangic && ozelBitis) {
+        h3.textContent = 'HAFTALIK NÖBET ÇİZELGESİ ('
+            + ozelBaslangic.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+            + ' — ' + ozelBitis.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) + ')';
+    } else {
+        const simdi = new Date();
+        const son = new Date(simdi);
+        son.setDate(son.getDate() + 6);
+        h3.textContent = 'HAFTALIK NÖBET ÇİZELGESİ ('
+            + simdi.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+            + ' — ' + son.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) + ')';
+    }
+}
+
+function toastGoster(msg, svg) {
+    const t = document.getElementById('toast');
+    t.innerHTML = svg
+        ? '<span style="display:inline-flex;align-items:center;gap:8px;">' + svg + '<span>' + msg + '</span></span>'
+        : msg;
+    t.classList.add('goster');
+    setTimeout(() => t.classList.remove('goster'), 2500);
+}
+
+let sifirlamaTimer = null;
+
+function sifirlamaBaslat() {
+    const onay = document.getElementById('sifirlama-onay');
+    const silBtn = document.getElementById('sil-onay');
+    const sureSpan = document.getElementById('sil-sure');
+    onay.style.display = 'flex';
+    silBtn.disabled = true;
+    silBtn.style.opacity = '0.4';
+    silBtn.style.cursor = 'not-allowed';
+    silBtn.innerHTML = '<span id="sil-sure">3</span> saniye bekle';
+    let kalan = 3;
+    const yeniSure = document.getElementById('sil-sure');
+    clearInterval(sifirlamaTimer);
+    sifirlamaTimer = setInterval(() => {
+        kalan--;
+        yeniSure.textContent = kalan;
+        if (kalan <= 0) {
+            clearInterval(sifirlamaTimer);
+            silBtn.disabled = false;
+            silBtn.style.opacity = '1';
+            silBtn.style.cursor = 'pointer';
+            silBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Sil';
+        }
+    }, 1000);
+}
+
+function sifirlamaIptal() {
+    clearInterval(sifirlamaTimer);
+    document.getElementById('sifirlama-onay').style.display = 'none';
+}
+
+function verileriSifirla() {
+    clearInterval(sifirlamaTimer);
+    veritabani = [];
+    grupAtamalari = Array.from({ length: GROUP_COUNT }, () => ['', '', '']);
+    grupVardiya = [0, 3, 6];
+    grup3Manuel = false;
+    ozelBaslangic = null;
+    ozelBitis = null;
+    document.getElementById('renkli-cikti').checked = false;
+    document.getElementById('sicil-cikti').checked = false;
+    document.documentElement.classList.remove('dark-mode');
+    document.getElementById('tema-ikon').innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    document.getElementById('tarih-baslangic').value = '';
+    document.getElementById('tarih-bitis').value = '';
+    document.getElementById('cizelge-alani').style.display = 'none';
+    document.getElementById('sifirlama-onay').style.display = 'none';
+    localStorage.clear();
+    donemGuncelle();
+    renderPersonel();
+    renderGruplar();
+    cizelgeOlustur();
+    toastGoster('Tüm veriler silindi', ICON.trash);
+}
+
+function sayfaDegistir(sayfa) {
+    document.getElementById('sayfa-personel').classList.toggle('aktif', sayfa === 'personel');
+    document.getElementById('sayfa-nobet').classList.toggle('aktif', sayfa === 'nobet');
+    document.getElementById('nav-personel').classList.toggle('aktif', sayfa === 'personel');
+    document.getElementById('nav-nobet').classList.toggle('aktif', sayfa === 'nobet');
+    if (sayfa === 'nobet') { cizelgeOlustur(); baslikGuncelle(); }
+}
+
+function koyuTemaUygula(aktif) {
+    const html = document.documentElement;
+    const ikon = document.getElementById('tema-ikon');
+    if (aktif) {
+        html.classList.add('dark-mode');
+        ikon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+    } else {
+        html.classList.remove('dark-mode');
+        ikon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    }
+}
+
+function koyuTemaDegistir() {
+    const aktif = !document.documentElement.classList.contains('dark-mode');
+    koyuTemaUygula(aktif);
+    verileriKaydet();
+}
+
+window.onload = function() {
+    init();
+    window.addEventListener('beforeprint', function() {
+        const cb = document.getElementById('renkli-cikti');
+        if (cb && cb.checked) document.getElementById('cizelge-alani').classList.add('renkli-cikti');
+        baslikGuncelle();
+    });
+    window.addEventListener('afterprint', function() {
+        document.getElementById('cizelge-alani').classList.remove('renkli-cikti');
+        baslikGuncelle();
+    });
+};
+
+function tarihSaatGuncelle() {
+    const el = document.getElementById('sst-bilgi');
+    if (!el) return;
+    const simdi = new Date();
+    const gun = simdi.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const saat = simdi.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    el.textContent = gun + '  ' + saat;
+    setTimeout(tarihSaatGuncelle, 10000);
+}
+document.addEventListener('DOMContentLoaded', tarihSaatGuncelle);
+</script>
+<footer id="alt-bilgi" style="text-align:center;font-size:11px;color:var(--text-secondary);padding:20px 0 0;border-top:1px solid var(--border);margin-top:24px;">>
+    <div id="sst-bilgi"></div>
+</footer>
+<div id="alt-imza" style="text-align:center;font-size:10px;color:var(--text-secondary);opacity:0.5;padding:6px 0 10px;letter-spacing:0.3px;">Geliştirici: Barış BURÇ</div>
+</body>
+</html>
