@@ -5,14 +5,17 @@ Kurumunuz için personel nöbet rotasyonu yönetimi. Tek dosya, sıfır kurulum.
 ## Özellikler
 
 - Personel ekleme, düzenleme, silme
-- 3 grup halinde personel atama (her grup 5 kişiye kadar)
-- Grup Amiri belirleme ve sıralama
+- 3 grup halinde personel atama (grup başına sınırsız kişi, varsayılan 3 slot)
+- Bir personel yalnızca tek bir gruba atanabilir
+- Grup Amiri belirleme (en fazla 3, grup başına 1) ve sıralama
 - 9 günlük sabit rotasyon döngüsü (Gündüz/Gece/İstirahat)
-- Bugünkü vardiya seçici ile esnek başlangıç
-- Özel tarih aralığı seçimi (en fazla 31 gün)
+- Grup vardiyalarını serbestçe değiştirme (seçilen vardiya başka gruptaysa otomatik takas)
+- Tarih filtresi: Son 7 gün veya özel tarih aralığı (en fazla 31 gün)
+- Grup filtresi ile tek grubun çizelgesini görüntüleme/yazdırma
 - Tam ekran önizleme
-- A4 yatay PDF çıktısı (renkli/siyah-beyaz)
+- A4 yatay PDF çıktısı (renkli/siyah-beyaz, sicil göster/gizle)
 - Kişisel vardiya istatistikleri
+- Yedek alma (JSON) ve yedekten geri yükleme
 - Koyu tema
 - Tüm veriler localStorage'da saklanır, kaybolmaz
 
@@ -23,5 +26,7 @@ Kurumunuz için personel nöbet rotasyonu yönetimi. Tek dosya, sıfır kurulum.
 3. Nöbet Çizelgesi sayfasında gruplara personel ata
 4. Her grubun bugünkü vardiyasını belirle
 5. Çizelge otomatik oluşur — PDF çıktısı alabilirsin
+
+Verilerini yedeklemek için Personel Yönetimi sayfasındaki **Yedek Al** butonunu kullan; başka bir cihaza taşımak veya geri yüklemek için **Yedekten Getir** ile JSON dosyasını seç.
 
 Tek HTML dosyası, ekstra kütüphane gerekmez.
