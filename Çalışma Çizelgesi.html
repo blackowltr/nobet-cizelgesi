@@ -996,7 +996,7 @@ function grupOtomatikDoldur() {
         grupAtamalari[g].forEach(s => { if (s) atanmis.add(s); });
     }
     grupAtamalari[2] = veritabani.filter(p => !atanmis.has(p.sicil)).map(p => p.sicil);
-    if (grupAtamalari[2].length === 0) grupAtamalari[2] = [''];
+    while (grupAtamalari[2].length < 3) grupAtamalari[2].push('');
 }
 
 function grupVardiyaDegisti(grupIdx, vardiyaIdx) {
