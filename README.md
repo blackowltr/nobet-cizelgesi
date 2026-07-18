@@ -21,7 +21,7 @@ Kurumunuz için personel nöbet rotasyonu yönetimi. Tek dosya, sıfır kurulum.
 
 ## Kullanım
 
-1. `Çalışma Çizelgesi.html` dosyasını tarayıcıda aç
+1. `index.html` dosyasını tarayıcıda aç (veya [canlı sürüm](https://blackowltr.github.io/nobet-cizelgesi/))
 2. Personel Yönetimi sayfasından personelleri ekle
 3. Nöbet Çizelgesi sayfasında gruplara personel ata
 4. Her grubun bugünkü vardiyasını belirle
