@@ -1280,23 +1280,47 @@ function cizelgeGoster() {
 
 function pngKaydet() {
     const alan = document.getElementById('cizelge-alani');
-    const gizliydi = alan.style.display === 'none' || alan.innerHTML.trim() === '';
-    const tamEkranda = alan.classList.contains('tam-ekran');
-    if (gizliydi) {
+    if (alan.style.display === 'none' || alan.innerHTML.trim() === '') {
         cizelgeOlustur();
         alan.style.display = 'block';
     }
-    if (tamEkranda) alan.classList.remove('tam-ekran');
+    baslikGuncelle();
     const renkli = document.getElementById('renkli-cikti').checked;
-    if (renkli) alan.classList.add('renkli-cikti');
-    else alan.classList.remove('renkli-cikti');
-    html2canvas(alan, {
-        scale: 2,
+    const klon = alan.cloneNode(true);
+    klon.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1120px;padding:24px 32px;overflow:visible;border:none;border-radius:0;box-shadow:none;background:#fff;z-index:-1;';
+    klon.querySelector('.tam-ekran-btn')?.remove();
+    klon.querySelector('.lejant')?.remove();
+    const tbl = klon.querySelector('#nobet-tablosu');
+    if (tbl) {
+        tbl.style.width = '100%';
+        tbl.style.tableLayout = 'fixed';
+        tbl.style.borderCollapse = 'collapse';
+        tbl.querySelectorAll('th, td').forEach(c => {
+            c.style.borderColor = '#222';
+            c.style.color = '#000';
+            c.style.fontSize = '13px';
+            c.style.padding = '5px 7px';
+        });
+        if (renkli) {
+            tbl.querySelectorAll('th').forEach(c => c.style.background = '#e5e5e5');
+            tbl.querySelectorAll('td.gunduz').forEach(c => { c.style.background = '#e8f5e9'; c.style.color = '#000'; });
+            tbl.querySelectorAll('td.gece').forEach(c => { c.style.background = '#e3f2fd'; c.style.color = '#000'; });
+            tbl.querySelectorAll('td.istirahat').forEach(c => { c.style.background = '#fff3e0'; c.style.color = '#000'; });
+        }
+    }
+    const h3 = klon.querySelector('#tablo-baslik');
+    if (h3) { h3.style.textAlign = 'center'; h3.style.margin = '0 0 16px'; h3.style.fontSize = '18px'; h3.style.color = '#000'; }
+    document.body.appendChild(klon);
+    html2canvas(klon, {
+        scale: 3,
         backgroundColor: '#ffffff',
         allowTaint: false,
         useCORS: true,
-        logging: false
+        logging: false,
+        width: 1120,
+        windowWidth: 1120
     }).then(canvas => {
+        document.body.removeChild(klon);
         const link = document.createElement('a');
         const simdi = new Date();
         link.download = 'nobet_cizelgesi_'
@@ -1306,10 +1330,9 @@ function pngKaydet() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        if (renkli) alan.classList.remove('renkli-cikti');
-        alan.style.display = 'none';
-        toastGoster('PNG kaydedildi', ICON.check);
+        toastGoster('PNG kaydedildi (' + canvas.width + 'x' + canvas.height + ')', ICON.check);
     }).catch(() => {
+        document.body.removeChild(klon);
         toastGoster('PNG oluşturulamadı', ICON.alert);
     });
 }
