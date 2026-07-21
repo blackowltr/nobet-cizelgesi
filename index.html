@@ -11,6 +11,7 @@
     <title>Personel Nöbet Çizelgesi</title>
     <script>document.documentElement.style.setProperty('--sat', 'env(safe-area-inset-top, 0px)');document.documentElement.style.setProperty('--sar', 'env(safe-area-inset-right, 0px)');document.documentElement.style.setProperty('--sab', 'env(safe-area-inset-bottom, 0px)');document.documentElement.style.setProperty('--sal', 'env(safe-area-inset-left, 0px)');</script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <style>
         :root {
             --gunduz: #e6f0e6; --gece: #e0e5f0; --istirahat: #f0ebe0;
@@ -386,6 +387,10 @@
                 <button class="btn btn-primary btn-sm" onclick="window.print()" style="gap:6px;min-height:34px;">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                     Yazdır
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="pngKaydet()" style="gap:6px;min-height:34px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    PNG
                 </button>
             </div>
         </div>
@@ -1271,6 +1276,42 @@ function cizelgeGoster() {
     }
     if (!el.classList.contains('tam-ekran')) tamEkran();
     baslikGuncelle();
+}
+
+function pngKaydet() {
+    const alan = document.getElementById('cizelge-alani');
+    const gizliydi = alan.style.display === 'none' || alan.innerHTML.trim() === '';
+    const tamEkranda = alan.classList.contains('tam-ekran');
+    if (gizliydi) {
+        cizelgeOlustur();
+        alan.style.display = 'block';
+    }
+    if (tamEkranda) alan.classList.remove('tam-ekran');
+    const renkli = document.getElementById('renkli-cikti').checked;
+    if (renkli) alan.classList.add('renkli-cikti');
+    else alan.classList.remove('renkli-cikti');
+    html2canvas(alan, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        allowTaint: false,
+        useCORS: true,
+        logging: false
+    }).then(canvas => {
+        const link = document.createElement('a');
+        const simdi = new Date();
+        link.download = 'nobet_cizelgesi_'
+            + simdi.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\./g, '-')
+            + '.png';
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        if (renkli) alan.classList.remove('renkli-cikti');
+        alan.style.display = 'none';
+        toastGoster('PNG kaydedildi', ICON.check);
+    }).catch(() => {
+        toastGoster('PNG oluşturulamadı', ICON.alert);
+    });
 }
 
 function baslikGuncelle() {
