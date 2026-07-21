@@ -1327,7 +1327,8 @@ function tarihAraligiOlustur() {
     donemGuncelle();
     cizelgeOlustur();
     const el = document.getElementById('cizelge-alani');
-    if (el.style.display === 'block') baslikGuncelle();
+    el.style.display = 'block';
+    baslikGuncelle();
     toastGoster(fark + ' günlük çizelge oluşturuldu', ICON.check);
 }
 
@@ -1434,15 +1435,18 @@ function pngKaydet() {
 function baslikGuncelle() {
     const h3 = document.getElementById('tablo-baslik');
     const grupEk = secilenGrup !== null ? ' - GRUP ' + (secilenGrup + 1) : '';
-    let bas, son;
+    let bas, son, etiket;
     if (ozelBaslangic && ozelBitis) {
         bas = ozelBaslangic; son = ozelBitis;
+        const gn = Math.round((son - bas) / (24 * 60 * 60 * 1000)) + 1;
+        etiket = gn <= 10 ? 'HAFTALIK' : 'AYLIK';
     } else {
         bas = new Date();
         son = new Date(bas);
         son.setDate(son.getDate() + 6);
+        etiket = 'HAFTALIK';
     }
-    h3.textContent = 'HAFTALIK NÖBET ÇİZELGESİ' + grupEk + ' ('
+    h3.textContent = etiket + ' NÖBET ÇİZELGESİ' + grupEk + ' ('
         + bas.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
         + ' — ' + son.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) + ')';
 }
