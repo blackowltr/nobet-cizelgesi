@@ -157,6 +157,7 @@
         .grup-kisi-satir { display: flex; gap: 0.5rem; align-items: center; }
         .grup-kisi-no { width: 1.5rem; height: 3rem; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
         .grup-kisi-satir select { flex: 1; -webkit-appearance: none; -moz-appearance: none; appearance: none; padding: 0.75rem 2.2rem 0.75rem 0.9rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.9rem; background-color: var(--input-bg); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 5l3 3 3-3'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; color: var(--text); min-width: 0; min-height: 3rem; transition: border-color 0.15s, box-shadow 0.15s; }
+        .izin-yildiz { color: #eab308; font-weight: 700; }
         .grup-kisi-satir select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         html.dark-mode .grup-kisi-satir select:focus { box-shadow: 0 0 0 3px rgba(96,165,250,0.15); }
         .btn-sil { background: none; border: none; color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-sm); transition: all 0.15s; flex-shrink: 0; display: flex; width: 3rem; height: 3rem; align-items: center; justify-content: center; }
@@ -444,6 +445,7 @@
             </thead>
             <tbody id="nobet-govde"></tbody>
         </table>
+        <div id="izin-ozet" style="margin-top:12px;padding:10px 14px;background:var(--surface-alt);border:1px solid var(--border-light);border-radius:8px;font-size:11px;color:var(--text-secondary);line-height:1.6;display:none;"></div>
     </div>
 </div>
 
@@ -462,6 +464,10 @@
         </div>
         <div id="istatistik-donem" style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;padding:8px 12px;background:var(--surface-alt);border-radius:6px;border:1px solid var(--border);"></div>
         <div id="istatistik-icerik"></div>
+        <div id="izin-bolumu" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+            <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:8px;">İZİN DURUMU</div>
+            <div id="izin-detay" style="font-size:12px;color:var(--text-secondary);"></div>
+        </div>
         <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
             <button class="btn btn-primary btn-sm" onclick="personelIstatistikYazdir()" style="gap:5px;min-height:44px;padding:10px 18px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
@@ -530,7 +536,7 @@ function init() {
     const kayitli = localStorage.getItem(LS_PERSONEL);
     if (kayitli) {
         veritabani = JSON.parse(kayitli);
-        veritabani.forEach(p => { if (p.amir === undefined) p.amir = false; });
+        veritabani.forEach(p => { if (p.amir === undefined) p.amir = false; if (p.izin === undefined) p.izin = null; });
         const gru = localStorage.getItem(LS_GRUPLAR);
         if (gru) grupAtamalari = JSON.parse(gru);
         const ayar = localStorage.getItem(LS_AYAR);
@@ -639,7 +645,7 @@ function personelEkle() {
     if (!sicil || !ad) { alert('Sicil ve ad girin.'); return; }
     if (!/^\d{6}$/.test(sicil)) { alert('Sicil 6 haneli rakam olmalıdır.'); return; }
     if (veritabani.some(p => p.sicil === sicil)) { alert('Bu sicil numarası zaten kayıtlı.'); return; }
-    veritabani.push({ sicil, ad, amir: false });
+    veritabani.push({ sicil, ad, amir: false, izin: null });
     sicilInput.value = ''; adInput.value = '';
     sicilInput.focus();
     grup3Manuel = false;
@@ -773,6 +779,21 @@ function personelIstatistik(sicil) {
         }).join('')}
     `;
 
+    const izinDetay = document.getElementById('izin-detay');
+    if (kisi.izin && kisi.izin.baslangic && kisi.izin.bitis) {
+        const fmt = d => d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+        izinDetay.innerHTML = `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ${fmt(new Date(kisi.izin.baslangic + 'T00:00:00'))} — ${fmt(new Date(kisi.izin.bitis + 'T00:00:00'))}</span>
+            <button class="btn btn-outline btn-sm" onclick="izinDuzenle('${sicil}')" style="font-size:10px;padding:4px 10px;min-height:auto;">Düzenle</button>
+            <button class="btn btn-outline btn-sm" onclick="izinSil('${sicil}')" style="font-size:10px;padding:4px 10px;min-height:auto;color:var(--danger);border-color:var(--danger);">Kaldır</button>
+        </div>`;
+    } else {
+        izinDetay.innerHTML = `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="color:var(--text-secondary);font-style:italic;">İzin tanımlanmamış</span>
+            <button class="btn btn-outline btn-sm" onclick="izinDuzenle('${sicil}')" style="font-size:10px;padding:4px 10px;min-height:auto;">İzin Ekle</button>
+        </div>`;
+    }
+
     document.getElementById('istatistik-modal').classList.add('goster');
     setTimeout(() => document.addEventListener('keydown', istatistikEsc), 50);
 }
@@ -784,6 +805,47 @@ function istatistikKapat() {
 
 function istatistikEsc(e) {
     if (e.key === 'Escape') istatistikKapat();
+}
+
+function izinDuzenle(sicil) {
+    const izinDetay = document.getElementById('izin-detay');
+    const kisi = veritabani.find(p => p.sicil === sicil);
+    const bas = kisi.izin && kisi.izin.baslangic ? kisi.izin.baslangic : '';
+    const bit = kisi.izin && kisi.izin.bitis ? kisi.izin.bitis : '';
+    izinDetay.innerHTML = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <label style="font-size:11px;font-weight:600;color:var(--text-secondary);">Başlangıç</label>
+        <input type="date" id="izin-bas" value="${bas}" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--input-bg);color:var(--text);">
+        <label style="font-size:11px;font-weight:600;color:var(--text-secondary);">Bitiş</label>
+        <input type="date" id="izin-bit" value="${bit}" style="padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--input-bg);color:var(--text);">
+        <button class="btn btn-primary btn-sm" onclick="izinKaydet('${sicil}')" style="font-size:10px;padding:5px 12px;min-height:auto;">Kaydet</button>
+        <button class="btn btn-outline btn-sm" onclick="personelIstatistik('${sicil}')" style="font-size:10px;padding:5px 12px;min-height:auto;">İptal</button>
+    </div>`;
+}
+
+function izinKaydet(sicil) {
+    const bas = document.getElementById('izin-bas').value;
+    const bit = document.getElementById('izin-bit').value;
+    if (!bas || !bit) { toastGoster('Başlangıç ve bitiş tarihi seçin.', ICON.alert); return; }
+    if (new Date(bit + 'T00:00:00') < new Date(bas + 'T00:00:00')) { toastGoster('Bitiş tarihi başlangıçtan önce olamaz.', ICON.alert); return; }
+    const kisi = veritabani.find(p => p.sicil === sicil);
+    if (!kisi) return;
+    kisi.izin = { baslangic: bas, bitis: bit };
+    verileriKaydet();
+    personelIstatistik(sicil);
+    renderGruplar();
+    cizelgeOlustur();
+    toastGoster('İzin kaydedildi.', ICON.check);
+}
+
+function izinSil(sicil) {
+    const kisi = veritabani.find(p => p.sicil === sicil);
+    if (!kisi) return;
+    kisi.izin = null;
+    verileriKaydet();
+    personelIstatistik(sicil);
+    renderGruplar();
+    cizelgeOlustur();
+    toastGoster('İzin kaldırıldı.', ICON.refresh);
 }
 
 function personelIstatistikYazdir() {
@@ -975,7 +1037,7 @@ function renderGruplar() {
                 <select onchange="grupDegisti(${g}, ${idx}, this.value)">
                     <option value="">— Personel seç —</option>
                     ${veritabani.filter(p => !alinmis.has(p.sicil) || p.sicil === sicil).map(p =>
-                        `<option value="${p.sicil}" ${p.sicil === sicil ? 'selected' : ''}>${p.sicil} - ${p.ad}</option>`
+                        `<option value="${p.sicil}" ${p.sicil === sicil ? 'selected' : ''}>${p.sicil} - ${p.ad}${p.izin && p.izin.baslangic && p.izin.bitis ? ' *' : ''}</option>`
                     ).join('')}
                 </select>
                 <button class="btn-sil" onclick="grupSlotSil(${g}, ${idx})" title="Kaldır">
@@ -1076,6 +1138,26 @@ function cizelgeOlustur() {
         gunSayisi = 7;
     }
 
+    const izinOzet = document.getElementById('izin-ozet');
+    const izinliler = veritabani.filter(p => p.izin && p.izin.baslangic && p.izin.bitis);
+    const aktifIzinliler = [];
+    const fmtTarih = d => d.toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    izinliler.forEach(p => {
+        const izinBas = new Date(p.izin.baslangic + 'T00:00:00');
+        const izinBit = new Date(p.izin.bitis + 'T00:00:00');
+        if (izinBit < baslangicTarih || izinBas > new Date(baslangicTarih.getTime() + (gunSayisi - 1) * 86400000)) return;
+        aktifIzinliler.push(p);
+    });
+    if (aktifIzinliler.length > 0) {
+        izinOzet.style.display = 'block';
+        izinOzet.innerHTML = '<strong style="color:var(--text);font-weight:700;">İZİNLİ PERSONEL:</strong> '
+            + aktifIzinliler.map(p => p.ad + ' (' + p.sicil + ') — '
+                + fmtTarih(new Date(p.izin.baslangic + 'T00:00:00')) + ' - ' + fmtTarih(new Date(p.izin.bitis + 'T00:00:00'))
+            ).join(', ');
+    } else {
+        izinOzet.style.display = 'none';
+    }
+
     tbody.innerHTML = '';
     for (let day = 0; day < gunSayisi; day++) {
         const tarih = new Date(baslangicTarih);
@@ -1116,10 +1198,20 @@ function cizelgeOlustur() {
                     if (!a.amir && b.amir) return 1;
                     return parseInt(a.sicil) - parseInt(b.sicil);
                 });
-                icerik = kisiler.map(p => sicilGoster
-                    ? `<div style="display:flex;justify-content:space-between;gap:12px;"><span>${p.ad}</span><span style="white-space:nowrap;">${p.sicil}</span></div>`
-                    : `<div>${p.ad}</div>`
-                ).join('');
+                const izinliSet = new Set();
+                kisiler.forEach(p => {
+                    if (p.izin && p.izin.baslangic && p.izin.bitis) {
+                        const ibas = new Date(p.izin.baslangic + 'T00:00:00');
+                        const ibit = new Date(p.izin.bitis + 'T00:00:00');
+                        if (tarih >= ibas && tarih <= ibit) izinliSet.add(p.sicil);
+                    }
+                });
+                icerik = kisiler.map(p => {
+                    const yildiz = izinliSet.has(p.sicil) ? ' <span class="izin-yildiz">*</span>' : '';
+                    return sicilGoster
+                        ? `<div style="display:flex;justify-content:space-between;gap:12px;"><span>${p.ad}${yildiz}</span><span style="white-space:nowrap;">${p.sicil}</span></div>`
+                        : `<div>${p.ad}${yildiz}</div>`;
+                }).join('');
             }
             cells += `<td class="${VARDİYA_CLASS[s]}">${icerik}</td>`;
         }
@@ -1280,10 +1372,8 @@ function cizelgeGoster() {
 
 function pngKaydet() {
     const alan = document.getElementById('cizelge-alani');
-    if (alan.style.display === 'none' || alan.innerHTML.trim() === '') {
-        cizelgeOlustur();
-        alan.style.display = 'block';
-    }
+    cizelgeOlustur();
+    alan.style.display = 'block';
     baslikGuncelle();
     const renkli = document.getElementById('renkli-cikti').checked;
     const klon = alan.cloneNode(true);
@@ -1303,11 +1393,13 @@ function pngKaydet() {
         });
         if (renkli) {
             tbl.querySelectorAll('th').forEach(c => c.style.background = '#e5e5e5');
-            tbl.querySelectorAll('td.gunduz').forEach(c => { c.style.background = '#e8f5e9'; c.style.color = '#000'; });
-            tbl.querySelectorAll('td.gece').forEach(c => { c.style.background = '#e3f2fd'; c.style.color = '#000'; });
-            tbl.querySelectorAll('td.istirahat').forEach(c => { c.style.background = '#fff3e0'; c.style.color = '#000'; });
+            tbl.querySelectorAll('td.gunduz').forEach(c => { c.style.background = '#e8f5e9'; });
+            tbl.querySelectorAll('td.gece').forEach(c => { c.style.background = '#e3f2fd'; });
+            tbl.querySelectorAll('td.istirahat').forEach(c => { c.style.background = '#fff3e0'; });
         }
     }
+    const izinOzetKlon = klon.querySelector('#izin-ozet');
+    if (izinOzetKlon) { izinOzetKlon.style.color = '#555'; izinOzetKlon.style.fontSize = '12px'; }
     const ilkCocuk = klon.children[0];
     if (ilkCocuk && ilkCocuk.tagName === 'DIV') { ilkCocuk.style.display = 'block'; ilkCocuk.style.textAlign = 'center'; ilkCocuk.style.margin = '0 0 16px'; }
     const h3 = klon.querySelector('#tablo-baslik');
