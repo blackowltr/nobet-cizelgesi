@@ -217,6 +217,17 @@
         .sayfa.aktif { display: block; }
         #sayfa-nobet.aktif { display:block; flex:1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
         #sayfa-personel.aktif { display:flex; flex-direction:column; flex:1; }
+        #sayfa-ayarlar.aktif { display:flex; flex-direction:column; flex:1; }
+        .ayar-kart { background: var(--surface-alt); border: 1px solid var(--border-light); border-radius: var(--radius); padding: 1rem; }
+        .ayar-kart + .ayar-kart { margin-top: 0.75rem; }
+        .ayar-satir { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+        .ayar-satir + .ayar-satir { margin-top: 0.6rem; }
+        .ayar-satir label { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+        .ayar-satir input[type="text"] { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; background: var(--input-bg); color: var(--text); min-height: 2rem; width: 8rem; }
+        .ayar-satir input[type="color"] { width: 2.2rem; height: 2rem; padding: 0; border: none; border-radius: 6px; cursor: pointer; }
+        .ayar-satir select { padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; background: var(--input-bg); color: var(--text); min-height: 2rem; }
+        .ayar-dongu-item { display: inline-flex; align-items: center; gap: 0.3rem; margin: 0.25rem; }
+        .ayar-dongu-item .sira { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; background: var(--surface); border: 1px solid var(--border); border-radius: 50%; font-size: 0.65rem; font-weight: 700; color: var(--text-secondary); }
 
         .kontrol-paneli { overflow-y: auto; -webkit-overflow-scrolling: touch; flex:1; }
         #sayfa-nobet .kontrol-paneli { overflow: visible; flex: none; }
@@ -228,7 +239,7 @@
         .pill { display: inline-flex; align-items: center; background: var(--surface-alt); border: 1px solid var(--border-light); border-radius: 100px; font-size: 0.7rem; color: var(--text-secondary); }
 
         @media print {
-            .nav-bar, .sayfa-panel, #istatistik-modal, .btn-ekle, .btn-sil, #sifirlama-onay { display: none !important; }
+            .nav-bar, .sayfa-panel, #istatistik-modal, .btn-ekle, .btn-sil, #sifirlama-onay, #sayfa-ayarlar { display: none !important; }
             body { background: #fff; padding: 0; }
             #sayfa-nobet { display: block !important; }
             #cizelge-alani { display: block !important; padding: 10px 12px; border-radius: 0; box-shadow: none; }
@@ -259,6 +270,7 @@
             .nav-bar button svg { width: 20px; height: 20px; }
             #sayfa-nobet.aktif { display:block; }
             #sayfa-personel.aktif { display:block; }
+            #sayfa-ayarlar.aktif { display:block; }
         }
         @media (max-width: 860px) {
             .grup-grid { grid-template-columns: 1fr; }
@@ -289,6 +301,10 @@
     <button id="nav-personel" onclick="sayfaDegistir('personel')">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <span>Personel</span>
+    </button>
+    <button id="nav-ayarlar" onclick="sayfaDegistir('ayarlar')">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Ayarlar</span>
     </button>
     <button id="nav-tema" onclick="koyuTemaDegistir()" title="Koyu tema" style="flex:none;padding:8px;">
         <svg id="tema-ikon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -371,12 +387,7 @@
                     <input type="checkbox" id="sicil-cikti" style="accent-color:var(--primary);width:13px;height:13px;margin:0;cursor:pointer;" onchange="cizelgeOlustur()">
                     Sicil
                 </label>
-                <select id="grup-filtre" onchange="grupFiltreDegisti(this.value)" style="padding:5px 28px 5px 12px;border:1px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text);background:var(--surface);min-height:30px;transition:all 0.15s;">
-                    <option value="">Tüm Gruplar</option>
-                    <option value="0">Grup 1</option>
-                    <option value="1">Grup 2</option>
-                    <option value="2">Grup 3</option>
-                </select>
+                <select id="grup-filtre" onchange="grupFiltreDegisti(this.value)" style="padding:5px 28px 5px 12px;border:1px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text);background:var(--surface);min-height:30px;transition:all 0.15s;"></select>
                 <select id="tarih-filtre" onchange="tarihFiltreDegisti(this.value)" style="padding:5px 28px 5px 12px;border:1px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;color:var(--text);background:var(--surface);min-height:30px;transition:all 0.15s;">
                     <option value="">Son 7 Gün</option>
                     <option value="ozel">Özel Tarih Aralığı</option>
@@ -434,18 +445,44 @@
                 Tam Ekran
             </button>
         </div>
-        <div class="lejant">
-            <span><span class="kutu" style="background:var(--gunduz);border-color:#aaa;"></span> Gündüz (08.00-19.00)</span>
-            <span><span class="kutu" style="background:var(--gece);border-color:#999;"></span> Gece (19.00-08.00)</span>
-            <span><span class="kutu" style="background:var(--istirahat);border-color:#888;"></span> İstirahat</span>
-        </div>
+        <div class="lejant" id="lejant-alani"></div>
         <table id="nobet-tablosu">
-            <thead>
-                <tr><th>TARİH</th><th>GÜNDÜZ (08.00-19.00)</th><th>GECE (19.00-08.00)</th><th>İSTİRAHAT</th></tr>
-            </thead>
+            <thead id="tablo-baslik-satiri"></thead>
             <tbody id="nobet-govde"></tbody>
         </table>
         <div id="izin-ozet" style="margin-top:12px;padding:10px 14px;background:var(--surface-alt);border:1px solid var(--border-light);border-radius:8px;font-size:11px;color:var(--text-secondary);line-height:1.6;display:none;"></div>
+    </div>
+</div>
+
+<div id="sayfa-ayarlar" class="sayfa">
+    <div class="kontrol-paneli sayfa-panel">
+        <h1>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Ayarlar
+        </h1>
+
+        <section style="margin-bottom:24px;">
+            <div style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:12px;">Grup Ayarları</div>
+            <div class="ayar-kart" id="ayar-gruplar"></div>
+        </section>
+
+        <section style="margin-bottom:24px;">
+            <div style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:4px;">Nöbet Döngüsü</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">9 günlük döngüde her adımın hangi vardiya türü olduğunu belirleyin. Değişiklikler çizelgeyi otomatik yeniler.</div>
+            <div class="ayar-kart" id="ayar-dongu"></div>
+        </section>
+
+        <section style="margin-bottom:24px;">
+            <div style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:4px;">Vardiya Türleri</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Vardiya türlerinin adlarını düzenleyin.</div>
+            <div class="ayar-kart" id="ayar-vardiya"></div>
+        </section>
+
+        <section style="margin-bottom:24px;">
+            <div style="font-weight:700;font-size:15px;color:var(--text);margin-bottom:4px;">Mevcut Pozisyon</div>
+            <div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;">Her grubun döngüdeki bugünkü adımını seçin (0-8 arası). Değişiklikler tüm çizelgeyi yeniden hesaplar.</div>
+            <div class="ayar-kart" id="ayar-pozisyon"></div>
+        </section>
     </div>
 </div>
 
@@ -503,12 +540,15 @@
 
 <script>
 const GROUP_COUNT = 3;
-const NOBET_SIRASI = ['Gündüz', 'Gündüz', 'Gündüz', 'Gece', 'İstirahat', 'Gece', 'İstirahat', 'Gece', 'İstirahat'];
-const VARDİYA_AD = ['Gündüz', 'Gece', 'İstirahat'];
-const VARDİYA_CLASS = ['gunduz', 'gece', 'istirahat'];
+let NOBET_SIRASI = ['Gündüz', 'Gündüz', 'Gündüz', 'Gece', 'İstirahat', 'Gece', 'İstirahat', 'Gece', 'İstirahat'];
+let VARDİYA_AD = ['Gündüz', 'Gece', 'İstirahat'];
+let VARDİYA_CLASS = ['gunduz', 'gece', 'istirahat'];
 const LS_PERSONEL = 'nobet_personel';
 const LS_GRUPLAR = 'nobet_gruplar';
 const LS_AYAR = 'nobet_ayarlar';
+const LS_AYARLAR = 'nobet_ayarlar_detay';
+let grupAdlari = ['Grup 1', 'Grup 2', 'Grup 3'];
+let grupRenkHex = ['#3b82f6', '#22c55e', '#eab308'];
 const ICON = {
     check: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
     trash: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
@@ -525,6 +565,13 @@ let ozelBaslangic = null;
 let ozelBitis = null;
 let istatistikSicil = null;
 let secilenGrup = null;
+
+function grupFiltreGuncelle() {
+    const sel = document.getElementById('grup-filtre');
+    const secili = sel.value;
+    sel.innerHTML = '<option value="">Tüm Gruplar</option>' +
+        grupAdlari.map((ad, i) => `<option value="${i}" ${secili === String(i) ? 'selected' : ''}>${ad}</option>`).join('');
+}
 
 function grupFiltreDegisti(val) {
     secilenGrup = val === '' ? null : parseInt(val);
@@ -550,10 +597,18 @@ function init() {
         const cbSicil = document.getElementById('sicil-cikti');
         if (cbSicil && s.sicilCikti) cbSicil.checked = true;
         }
-        const gecerliSet = new Set(grupVardiya);
-        if (grupVardiya.length !== 3 || gecerliSet.size !== 3 ||
-            !grupVardiya.every(o => o === 0 || o === 3 || o === 6)) {
-            grupVardiya = [0, 3, 6];
+        const gecerliDegerler = VARDİYA_AD.map((_, i) => i * 3);
+        if (grupVardiya.length !== GROUP_COUNT || !grupVardiya.every(o => gecerliDegerler.includes(o))) {
+            grupVardiya = gecerliDegerler.slice(0, GROUP_COUNT);
+        }
+        const detay = localStorage.getItem(LS_AYARLAR);
+        if (detay) {
+            const d = JSON.parse(detay);
+            if (d.NOBET_SIRASI) NOBET_SIRASI = d.NOBET_SIRASI;
+            if (d.VARDİYA_AD) VARDİYA_AD = d.VARDİYA_AD;
+            if (d.VARDİYA_CLASS) VARDİYA_CLASS = d.VARDİYA_CLASS;
+            if (d.grupAdlari) grupAdlari = d.grupAdlari;
+            if (d.grupRenkHex) grupRenkHex = d.grupRenkHex;
         }
     } else {
         veritabani = [];
@@ -563,7 +618,9 @@ function init() {
     grupOtomatikDoldur();
     renderPersonel();
     renderGruplar();
+    cizelgeHeaderGuncelle();
     cizelgeOlustur();
+    grupFiltreGuncelle();
     document.getElementById('sicil-input').addEventListener('keydown', e => { if (e.key === 'Enter') personelEkle(); });
     document.getElementById('ad-input').addEventListener('keydown', e => { if (e.key === 'Enter') personelEkle(); });
 }
@@ -572,6 +629,7 @@ function verileriKaydet() {
     localStorage.setItem(LS_PERSONEL, JSON.stringify(veritabani));
     localStorage.setItem(LS_GRUPLAR, JSON.stringify(grupAtamalari));
     localStorage.setItem(LS_AYAR, JSON.stringify({ grup3Manuel, renkliCikti: document.getElementById('renkli-cikti').checked, sicilCikti: document.getElementById('sicil-cikti').checked, grupVardiya, koyuTema: document.documentElement.classList.contains('dark-mode') }));
+    localStorage.setItem(LS_AYARLAR, JSON.stringify({ NOBET_SIRASI, VARDİYA_AD, VARDİYA_CLASS, grupAdlari, grupRenkHex }));
 }
 
 function yedekAl() {
@@ -742,7 +800,7 @@ function personelIstatistik(sicil) {
         + ' — ' + bit.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
         + '  (' + fark + ' gün)';
 
-    let gunduz = 0, gece = 0, istirahat = 0;
+    const vardiyaSayaci = VARDİYA_AD.map(() => 0);
     const gunler = [];
     for (let day = 0; day < fark; day++) {
         const tarih = new Date(bas);
@@ -755,23 +813,23 @@ function personelIstatistik(sicil) {
             vardiya = NOBET_SIRASI[sira];
             break;
         }
-        if (vardiya === 'Gündüz') gunduz++;
-        else if (vardiya === 'Gece') gece++;
-        else if (vardiya === 'İstirahat') istirahat++;
+        const vi = VARDİYA_AD.indexOf(vardiya);
+        if (vi >= 0) vardiyaSayaci[vi]++;
         gunler.push({ tarih, vardiya });
     }
 
     const icerik = document.getElementById('istatistik-icerik');
     icerik.innerHTML = `
         <div class="istatistik-kutu">
-            <div><div class="sayi" style="color:var(--gunduz-text);">${gunduz}</div><div class="label">Gündüz</div></div>
-            <div><div class="sayi" style="color:var(--gece-text);">${gece}</div><div class="label">Gece</div></div>
-            <div><div class="sayi" style="color:var(--istirahat-text);">${istirahat}</div><div class="label">İstirahat</div></div>
+            ${VARDİYA_AD.map((v, i) =>
+                `<div><div class="sayi" style="color:var(--${VARDİYA_CLASS[i]}-text);">${vardiyaSayaci[i]}</div><div class="label">${v}</div></div>`
+            ).join('')}
         </div>
         <div style="font-size:11px;color:var(--text-secondary);margin-bottom:8px;font-weight:600;">Günlük Dağılım</div>
         ${gunler.map(g => {
             const v = g.vardiya || '—';
-            const cls = v === 'Gündüz' ? 'gunduz' : v === 'Gece' ? 'gece' : v === 'İstirahat' ? 'istirahat' : '';
+            const vi = VARDİYA_AD.indexOf(g.vardiya);
+            const cls = vi >= 0 ? VARDİYA_CLASS[vi] : '';
             return `<div class="istatistik-gun">
                 <span class="tarih">${g.tarih.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', weekday: 'short' })}</span>
                 <span class="vardiya ${cls}" style="background:var(--${cls});">${v}</span>
@@ -987,22 +1045,105 @@ function personelAmirDegistir(sicil, amir) {
     toastGoster(kisi.ad + ' ' + (amir ? 'Grup Amiri olarak işaretlendi' : 'Grup Amiri olarak işaretlenmedi'), ICON.check);
 }
 
+function renderAyarlar() {
+    document.getElementById('ayar-gruplar').innerHTML = Array.from({ length: GROUP_COUNT }, (_, g) =>
+        `<div class="ayar-satir">
+            <label>Grup ${g + 1} Adı</label>
+            <input type="text" value="${grupAdlari[g]}" onchange="ayarGrupAdi(${g}, this.value)">
+            <label>Renk</label>
+            <input type="color" value="${grupRenkHex[g]}" onchange="ayarGrupRenk(${g}, this.value)">
+        </div>`
+    ).join('');
+
+    document.getElementById('ayar-dongu').innerHTML = NOBET_SIRASI.map((adim, i) =>
+        `<span class="ayar-dongu-item">
+            <span class="sira">${i + 1}</span>
+            <select onchange="ayarDonguAdim(${i}, this.value)">
+                ${VARDİYA_AD.map((v, vi) =>
+                    `<option value="${vi}" ${adim === v ? 'selected' : ''}>${v}</option>`
+                ).join('')}
+            </select>
+        </span>`
+    ).join('');
+
+    document.getElementById('ayar-vardiya').innerHTML = VARDİYA_AD.map((v, i) =>
+        `<div class="ayar-satir">
+            <label>Ad ${i + 1}</label>
+            <input type="text" value="${v}" onchange="ayarVardiyaAd(${i}, this.value)">
+            <label>Sınıf</label>
+            <input type="text" value="${VARDİYA_CLASS[i]}" onchange="ayarVardiyaClass(${i}, this.value)" style="width:6rem;">
+        </div>`
+    ).join('');
+
+    document.getElementById('ayar-pozisyon').innerHTML = Array.from({ length: GROUP_COUNT }, (_, g) => {
+        const bugunVardiya = NOBET_SIRASI[grupVardiya[g]];
+        return `<div class="ayar-satir">
+            <label>${grupAdlari[g]}</label>
+            <select onchange="ayarPozisyon(${g}, this.value)">
+                ${NOBET_SIRASI.map((v, i) =>
+                    `<option value="${i}" ${grupVardiya[g] === i ? 'selected' : ''}>Adım ${i + 1} — ${v}</option>`
+                ).join('')}
+            </select>
+            <span style="font-size:0.75rem;font-weight:600;color:var(--text-secondary);">Bugün: ${bugunVardiya}</span>
+        </div>`;
+    }).join('');
+    grupFiltreGuncelle();
+}
+
+function ayarGrupAdi(g, val) {
+    grupAdlari[g] = val || ('Grup ' + (g + 1));
+    verileriKaydet();
+    renderGruplar();
+    renderAyarlar();
+}
+
+function ayarGrupRenk(g, val) {
+    grupRenkHex[g] = val;
+    verileriKaydet();
+    renderGruplar();
+    renderAyarlar();
+}
+
+function ayarDonguAdim(i, val) {
+    NOBET_SIRASI[i] = VARDİYA_AD[parseInt(val)];
+    verileriKaydet();
+    cizelgeOlustur();
+    renderAyarlar();
+}
+
+function ayarVardiyaAd(i, val) {
+    const eski = VARDİYA_AD[i];
+    VARDİYA_AD[i] = val || eski;
+    NOBET_SIRASI = NOBET_SIRASI.map(v => v === eski ? VARDİYA_AD[i] : v);
+    verileriKaydet();
+    cizelgeOlustur();
+    renderGruplar();
+    renderAyarlar();
+}
+
+function ayarVardiyaClass(i, val) {
+    VARDİYA_CLASS[i] = val || VARDİYA_CLASS[i];
+    verileriKaydet();
+    cizelgeOlustur();
+    renderAyarlar();
+}
+
+function ayarPozisyon(g, val) {
+    grupVardiya[g] = parseInt(val);
+    verileriKaydet();
+    renderGruplar();
+    cizelgeOlustur();
+    baslikGuncelle();
+    renderAyarlar();
+    toastGoster(grupAdlari[g] + ' pozisyonu: Adım ' + (parseInt(val) + 1) + ' — ' + NOBET_SIRASI[parseInt(val)], ICON.check);
+}
+
 function renderGruplar() {
     const div = document.getElementById('grup-atamalari');
-
-    const grupRenk = ['#3b82f6', '#22c55e', '#eab308'];
-
-    function vardiyaRengi(v) {
-        if (v === 'Gündüz') return '#22c55e';
-        if (v === 'Gece') return '#3b82f6';
-        return '#eab308';
-    }
 
     let html = '<div class="grup-grid">';
     for (let g = 0; g < GROUP_COUNT; g++) {
         const bugunVardiya = NOBET_SIRASI[grupVardiya[g]];
-        const renk = vardiyaRengi(bugunVardiya);
-        const acc = grupRenk[g];
 
         const alinanVardiya = new Set();
         for (let h = 0; h < GROUP_COUNT; h++) {
@@ -1013,7 +1154,7 @@ function renderGruplar() {
         html += `<div class="grup-card">
             <div class="grup-card-header">
                 <span class="grup-vardiya-dot"></span>
-                <span class="grup-etiket">Grup ${g + 1}</span>
+                <span class="grup-etiket">${grupAdlari[g]}</span>
                 <span class="grup-sayac">${doluSayisi} kişi</span>
             </div>
             <div class="grup-vardiya-wrap">
@@ -1069,18 +1210,18 @@ function grupOtomatikDoldur() {
 function grupVardiyaDegisti(grupIdx, vardiyaIdx) {
     const v = parseInt(vardiyaIdx);
     const hedef = VARDİYA_AD[v];
-    const offsetMap = { 'Gündüz': 0, 'Gece': 3, 'İstirahat': 6 };
+    const offsetMap = Object.fromEntries(VARDİYA_AD.map((ad, i) => [ad, i * 3]));
     const eskiOffset = grupVardiya[grupIdx];
     for (let h = 0; h < GROUP_COUNT; h++) {
         if (h !== grupIdx && NOBET_SIRASI[grupVardiya[h]] === hedef) {
             grupVardiya[h] = eskiOffset;
         }
     }
-    grupVardiya[grupIdx] = offsetMap[hedef] || 0;
+    grupVardiya[grupIdx] = offsetMap[hedef] ?? 0;
     verileriKaydet();
     renderGruplar();
     cizelgeOlustur();
-    toastGoster('Grup ' + (grupIdx + 1) + ' bugünkü vardiya: ' + hedef);
+    toastGoster(grupAdlari[grupIdx] + ' bugünkü vardiya: ' + hedef);
 }
 
 function grupDegisti(grupIdx, slotIdx, sicil) {
@@ -1114,12 +1255,23 @@ function grupSlotSil(grupIdx, slotIdx) {
     cizelgeOlustur();
 }
 
+function cizelgeHeaderGuncelle() {
+    const lejant = document.getElementById('lejant-alani');
+    lejant.innerHTML = VARDİYA_AD.map((v, i) =>
+        `<span><span class="kutu" style="background:var(--${VARDİYA_CLASS[i]});border-color:#aaa;"></span> ${v}</span>`
+    ).join('');
+    document.getElementById('tablo-baslik-satiri').innerHTML =
+        '<tr><th>TARİH</th>' + VARDİYA_AD.map(v => '<th>' + v.toUpperCase() + '</th>').join('') + '</tr>';
+}
+
 function cizelgeOlustur() {
     const tbody = document.getElementById('nobet-govde');
 
+    cizelgeHeaderGuncelle();
+
     const doluGrupSayisi = grupAtamalari.filter(g => g.some(s => s)).length;
     if (doluGrupSayisi === 0) {
-        tbody.innerHTML = '<tr><td class="bos-uyari" colspan="4">Lütfen gruplara personel atayın.</td></tr>';
+        tbody.innerHTML = '<tr><td class="bos-uyari" colspan="' + (1 + VARDİYA_AD.length) + '">Lütfen gruplara personel atayın.</td></tr>';
         return;
     }
 
@@ -1178,7 +1330,7 @@ function cizelgeOlustur() {
 
         let cells = `<td class="tarih"><div>${tarih.toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}</div><div style="font-size:12px;font-weight:600;">${tarih.toLocaleDateString('tr-TR', { weekday: 'long' })}</div></td>`;
 
-        for (let s = 0; s < 3; s++) {
+        for (let s = 0; s < VARDİYA_AD.length; s++) {
             const gruplar = shiftGruplari[s];
             let icerik;
             if (gruplar.length === 0) {
@@ -1394,9 +1546,10 @@ function pngKaydet() {
         });
         if (renkli) {
             tbl.querySelectorAll('th').forEach(c => c.style.background = '#e5e5e5');
-            tbl.querySelectorAll('td.gunduz').forEach(c => { c.style.background = '#e8f5e9'; });
-            tbl.querySelectorAll('td.gece').forEach(c => { c.style.background = '#e3f2fd'; });
-            tbl.querySelectorAll('td.istirahat').forEach(c => { c.style.background = '#fff3e0'; });
+            const pngColors = ['#e8f5e9', '#e3f2fd', '#fff3e0'];
+            VARDİYA_CLASS.forEach((cls, i) => {
+                tbl.querySelectorAll('td.' + cls).forEach(c => { c.style.background = pngColors[i] || '#f5f5f5'; });
+            });
         }
     }
     const izinOzetKlon = klon.querySelector('#izin-ozet');
@@ -1434,7 +1587,7 @@ function pngKaydet() {
 
 function baslikGuncelle() {
     const h3 = document.getElementById('tablo-baslik');
-    const grupEk = secilenGrup !== null ? ' - GRUP ' + (secilenGrup + 1) : '';
+    const grupEk = secilenGrup !== null ? ' - ' + grupAdlari[secilenGrup].toUpperCase() : '';
     let bas, son, etiket;
     if (ozelBaslangic && ozelBitis) {
         bas = ozelBaslangic; son = ozelBitis;
@@ -1521,9 +1674,12 @@ function verileriSifirla() {
 function sayfaDegistir(sayfa) {
     document.getElementById('sayfa-personel').classList.toggle('aktif', sayfa === 'personel');
     document.getElementById('sayfa-nobet').classList.toggle('aktif', sayfa === 'nobet');
+    document.getElementById('sayfa-ayarlar').classList.toggle('aktif', sayfa === 'ayarlar');
     document.getElementById('nav-personel').classList.toggle('aktif', sayfa === 'personel');
     document.getElementById('nav-nobet').classList.toggle('aktif', sayfa === 'nobet');
-    if (sayfa === 'nobet') { cizelgeOlustur(); baslikGuncelle(); }
+    document.getElementById('nav-ayarlar').classList.toggle('aktif', sayfa === 'ayarlar');
+    if (sayfa === 'nobet') { cizelgeOlustur(); baslikGuncelle(); grupFiltreGuncelle(); }
+    if (sayfa === 'ayarlar') { renderAyarlar(); }
 }
 
 function koyuTemaUygula(aktif) {
